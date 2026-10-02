@@ -1,4 +1,4 @@
-// Última actualización: 2/10/2026, 5:13:46 p.m.
+// Última actualización: 2/10/2026, 5:22:14 p.m.
 const TU_WHATSAPP = "59161159473";
 const USUARIOS = {
     "jesus": "mamani",
@@ -18,7 +18,7 @@ const DATOS_INICIALES = [
         "precio": 150,
         "tallaUnica": 38,
         "imagen": "fotos/foto1.jpg",
-        "disponible": true
+        "disponible": false
     },
     {
         "id": 2,
