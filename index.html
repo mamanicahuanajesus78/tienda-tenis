@@ -3,116 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👟 Tienda de Tenis — Modelos Únicos</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>👟 Tienda de Tenis</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .contenedor-qr {
-            position: relative;
-            display: inline-block;
-            margin: 15px 0;
-        }
-        .qr-img {
-            max-width: 240px;
-            width: 80%;
-            border-radius: 12px;
-            border: 3px solid rgba(0, 240, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
-            display: block;
-            margin: 0 auto;
-        }
-        .lupa-btn {
-            position: absolute;
-            top: 50%;
-            right: -5px;
-            transform: translateY(-50%);
-            background: #22d3ee;
-            color: #000;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
-        }
-        .lupa-btn:hover {
-            transform: translateY(-50%) scale(1.1);
-        }
-        .pago {text-align: center;}
+        * {box-sizing: border-box; margin: 0; padding: 0;}
+        body {font-family: system-ui; background: #0f172a; color: white;}
+        .contenedor {max-width: 1200px; margin: 0 auto; padding: 20px;}
+        header {text-align: center; margin-bottom: 30px;}
+        h1 {font-size: 26px;}
+        .subtitulo {color: #94a3b8; margin-top: 8px;}
+
+        /* QR + LUPITA */
+        .contenedor-qr {position: relative; display: inline-block; margin: 15px 0;}
+        .qr-img {max-width: 240px; width: 80%; border-radius: 12px; border: 3px solid rgba(34,211,238,0.3); display: block; margin: 0 auto;}
+        .lupa-btn {position: absolute; top: 50%; right: -5px; transform: translateY(-50%); background: #22d3ee; color: #000; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(34,211,238,0.5);}
+        
+        .pago {text-align: center; margin-bottom: 30px;}
         .dato {font-size: 16px; margin: 8px 0;}
-        .numero-etiqueta {
-            display: inline-block;
-            background: #22d3ee;
-            color: #000;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            margin-right: 8px;
-        }
-        .producto {
-            scroll-margin-top: 80px;
-            transition: box-shadow 0.5s ease, transform 0.5s ease;
-        }
-        .producto.destacado {
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.8);
-            transform: scale(1.02);
-            border-color: #22d3ee !important;
-        }
-        .filtros {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin: 20px 0;
-            min-height: 50px;
-        }
-        .talla-btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            background: #1e293b;
-            color: white;
-            transition: all 0.2s;
-        }
-        .talla-btn.activo {
-            background: linear-gradient(90deg, #22d3ee, #10b981);
-            color: #000;
-        }
+
+        /* BOTONES DE TALLAS — LIMPIOS */
+        .filtros {display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 30px; min-height: 50px;}
+        .talla-btn {padding: 10px 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #1e293b; color: white;}
+        .talla-btn.activo {background: linear-gradient(90deg, #22d3ee, #10b981); color: #000;}
+
+        /* PRODUCTOS */
+        .grid {display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;}
+        .producto {background: #1e293b; border-radius: 12px; padding: 15px; border: 2px solid transparent; transition: all 0.3s;}
+        .producto.destacado {border-color: #22d3ee; box-shadow: 0 0 25px rgba(34,211,238,0.4);}
+        .prod-img {width: 100%; border-radius: 8px; margin-bottom: 10px;}
+        .numero-etiqueta {display: inline-block; background: #22d3ee; color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 13px; margin-right: 6px;}
+        .prod-nombre {font-size: 15px; margin-bottom: 6px;}
+        .prod-precio {color: #22d3ee; font-weight: bold; font-size: 18px; margin: 6px 0;}
+        .prod-talla {font-size: 14px; color: #94a3b8;}
+        .disponible {color: #10b981; margin: 8px 0;}
+        .vendido {color: #ef4444; margin: 8px 0;}
+        .comprar-btn {width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 8px;}
+        .btn-disponible {background: linear-gradient(90deg, #22d3ee, #10b981); color: #000;}
+        .btn-vendido {background: #333; color: #888; cursor: not-allowed;}
+
         /* QR GRANDE */
-        .ventana-qr-grande {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            flex-direction: column;
-        }
-        .qr-grande-imagen {
-            max-width: 90%;
-            max-height: 75vh;
-            border-radius: 12px;
-            border: 4px solid #22d3ee;
-        }
-        .btn-cerrar-qr {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 25px;
-            cursor: pointer;
-        }
+        .ventana-qr-grande {position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; padding: 20px;}
+        .qr-grande-imagen {max-width: 90%; max-height: 70vh; border-radius: 12px; border: 4px solid #22d3ee;}
+        .btn-cerrar-qr {background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 20px; cursor: pointer;}
+        
+        footer {text-align: center; margin-top: 40px; color: #64748b; font-size: 14px;}
     </style>
 </head>
 <body>
@@ -132,26 +69,19 @@
             <button class="lupa-btn" onclick="abrirQRgrande()">🔍</button>
         </div>
         
-        <p style="margin-top:15px; font-size:15px; color:#aaa;">📱 Escanea el código QR → paga → manda comprobante por WhatsApp</p>
-        <p style="margin-top:10px; color:#00ff88; font-weight:bold; font-size:15px;" id="entrega-dato"></p>
+        <p style="margin-top:15px; font-size:15px; color:#94a3b8;">📱 Escanea el QR → paga → manda comprobante por WhatsApp</p>
+        <p style="margin-top:10px; color:#10b981; font-weight:bold;" id="entrega-dato"></p>
     </div>
 
-    <div class="filtros" id="filtros-tallas">
-        <!-- Botones aparecen solo aquí -->
-    </div>
-
-    <div class="grid" id="productos">
-        <p style="text-align:center; color:#aaa; padding:40px; font-size:18px;">Cargando modelos...</p>
-    </div>
+    <div class="filtros" id="filtros-tallas"></div>
+    <div class="grid" id="productos"><p style="text-align:center; color:#888; padding:40px;">Cargando...</p></div>
 
     <footer>
-        💬 Al comprar te escribo por WhatsApp y coordinamos la entrega 🚚
-        <br><br>
-        <a href="admin.html">🔐 Panel de Administración</a>
+        💬 Al comprar te escribo por WhatsApp y coordinamos la entrega 🚚<br><br>
+        <a href="admin.html" style="color:#22d3ee;">🔐 Panel de Administración</a>
     </footer>
 </div>
 
-<!-- QR GRANDE -->
 <div class="ventana-qr-grande" id="ventanaQR" onclick="cerrarQRgrande()">
     <img src="" alt="QR en grande" class="qr-grande-imagen" id="qr-imagen-grande">
     <button class="btn-cerrar-qr">✖ Cerrar</button>
@@ -162,71 +92,41 @@
 let productos = [...DATOS_INICIALES];
 let filtroActivo = 'todos';
 
-// Numerar tenis
+// Numerar
 productos.forEach((p, i) => p.numero = i + 1);
 
-// ✅ SOLO TALLAS QUE EXISTEN — SIN DUPLICADOS
+// ✅ SOLO TALLAS DE PRODUCTOS DISPONIBLES
 function obtenerTallasDisponibles() {
     const vistas = {};
-    productos.forEach(p => {
+    productos.filter(p => p.disponible).forEach(p => {
         vistas[p.tallaUnica] = true;
     });
-    const tallas = Object.keys(vistas).map(Number).filter(n => !isNaN(n));
-    return tallas.sort((a, b) => a - b);
+    return Object.keys(vistas).map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
 }
 
-// ✅ BOTONES LIMPIOS SIEMPRE
+// ✅ REDIBUJAR BOTONES DESDE CERO
 function dibujarBotonesTallas() {
-    const contenedor = document.getElementById('filtros-tallas');
-    contenedor.innerHTML = ''; // BORRA TODO ANTES DE VOLVER A PONER
+    const c = document.getElementById('filtros-tallas');
+    c.innerHTML = ''; // BORRA TODO COMPLETAMENTE
     
     const tallas = obtenerTallasDisponibles();
     
     // Botón Todos
-    const btnTodos = document.createElement('button');
-    btnTodos.className = `talla-btn ${filtroActivo==='todos'?'activo':''}`;
-    btnTodos.textContent = 'Todos';
-    btnTodos.dataset.talla = 'todos';
-    btnTodos.onclick = () => {
-        filtroActivo = 'todos';
-        dibujarBotonesTallas();
-        mostrarProductos('todos');
-    };
-    contenedor.appendChild(btnTodos);
+    const todos = document.createElement('button');
+    todos.className = `talla-btn ${filtroActivo==='todos'?'activo':''}`;
+    todos.textContent = 'Todos';
+    todos.onclick = () => { filtroActivo='todos'; dibujarBotonesTallas(); mostrarProductos(); };
+    c.appendChild(todos);
     
-    // Botones de cada talla
-    tallas.forEach(talla => {
+    // Botones de talla
+    tallas.forEach(t => {
         const btn = document.createElement('button');
-        btn.className = `talla-btn ${filtroActivo==talla?'activo':''}`;
-        btn.textContent = talla;
-        btn.dataset.talla = talla;
-        btn.onclick = () => {
-            filtroActivo = talla;
-            dibujarBotonesTallas();
-            mostrarProductos(talla);
-        };
-        contenedor.appendChild(btn);
+        btn.className = `talla-btn ${filtroActivo==t?'activo':''}`;
+        btn.textContent = t;
+        btn.onclick = () => { filtroActivo=t; dibujarBotonesTallas(); mostrarProductos(); };
+        c.appendChild(btn);
     });
 }
-
-mostrarPago();
-dibujarBotonesTallas();
-mostrarProductos('todos');
-
-// Ir directo al tenis
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const hash = window.location.hash;
-        if (!hash) return;
-        const idBuscado = hash.replace('#tenis-', '');
-        const elemento = document.querySelector(`[data-id="${idBuscado}"]`);
-        if (elemento) {
-            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            elemento.classList.add('destacado');
-            setTimeout(() => elemento.classList.remove('destacado'), 4000);
-        }
-    }, 400);
-});
 
 function mostrarPago() {
     document.getElementById('nombre-dato').textContent = DATOS_PAGO.nombre;
@@ -241,58 +141,63 @@ function abrirQRgrande() {
     document.getElementById('ventanaQR').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
-
 function cerrarQRgrande() {
     document.getElementById('ventanaQR').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
-function mostrarProductos(filtro = 'todos') {
+function mostrarProductos() {
     const grid = document.getElementById('productos');
     grid.innerHTML = '';
     
     productos.forEach(p => {
-        if (filtro !== 'todos' && p.tallaUnica !== filtro) return;
+        if (filtroActivo !== 'todos' && p.tallaUnica !== filtroActivo) return;
         
         grid.innerHTML += `
         <div class="producto" data-id="${p.id}">
-            <img src="${p.imagen}" class="prod-img" alt="${p.nombre}" loading="lazy">
-            <div class="prod-info">
-                <h4 class="prod-nombre">
-                    <span class="numero-etiqueta">#${p.numero}</span>
-                    ${p.nombre}
-                </h4>
-                <p class="prod-precio">${p.precio} Bs</p>
-                <span class="prod-talla">👟 Talla ${p.tallaUnica}</span>
-                <p class="${p.disponible ? 'disponible' : 'vendido'}">
-                    ${p.disponible ? '✅ DISPONIBLE' : '❌ VENDIDO'}
-                </p>
-                <button class="comprar-btn ${p.disponible ? 'btn-disponible' : 'btn-vendido'}" 
-                    ${!p.disponible ? 'disabled' : ''} 
-                    onclick="comprarDirecto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.numero}, ${p.tallaUnica}, ${p.precio})">
-                    ${p.disponible ? '🛒 COMPRAR ESTE' : 'AGOTADO'}
-                </button>
-            </div>
+            <img src="${p.imagen}" class="prod-img" alt="${p.nombre}">
+            <h4 class="prod-nombre"><span class="numero-etiqueta">#${p.numero}</span>${p.nombre}</h4>
+            <p class="prod-precio">${p.precio} Bs</p>
+            <span class="prod-talla">👟 Talla ${p.tallaUnica}</span>
+            <p class="${p.disponible?'disponible':'vendido'}">${p.disponible?'✅ DISPONIBLE':'❌ VENDIDO'}</p>
+            <button class="comprar-btn ${p.disponible?'btn-disponible':'btn-vendido'}" 
+                ${!p.disponible?'disabled':''}
+                onclick="comprarDirecto(${p.id},'${p.nombre.replace(/'/g,"\\'")}',${p.numero},${p.tallaUnica},${p.precio})">
+                ${p.disponible?'🛒 COMPRAR ESTE':'AGOTADO'}
+            </button>
         </div>`;
     });
     
     if (!grid.innerHTML) {
-        grid.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No hay modelos disponibles en esta talla 😊</p>`;
+        grid.innerHTML = '<p style="text-align:center; color:#888; padding:40px;">No hay modelos en esta talla 😊</p>';
     }
+    
+    // Destacar si viene del enlace
+    setTimeout(() => {
+        const hash = window.location.hash;
+        if (!hash) return;
+        const el = document.querySelector(`[data-id="${hash.replace('#tenis-','')}"]`);
+        if (el) {
+            el.scrollIntoView({behavior:'smooth', block:'center'});
+            el.classList.add('destacado');
+            setTimeout(()=>el.classList.remove('destacado'),4000);
+        }
+    }, 100);
 }
 
 function comprarDirecto(id, nombre, numero, talla, precio) {
-    const enlaceConProducto = `${window.location.origin}${window.location.pathname}#tenis-${id}`;
+    const enlace = window.location.origin + window.location.pathname + '#tenis-' + id;
     const msg = encodeURIComponent(
         `Hola! 👟 Me interesa este modelo:\n\n` +
-        `🔢 Modelo #${numero}\n` +
-        `📦 Nombre: ${nombre}\n` +
-        `👞 Talla: ${talla}\n` +
-        `💰 Precio: ${precio} Bs\n\n` +
-        `🔗 Ver directo: ${enlaceConProducto}\n\nQuedo atento para el pago y entrega ✅`
+        `🔢 Modelo #${numero}\n📦 ${nombre}\n👞 Talla ${talla}\n💰 ${precio} Bs\n\n🔗 Ver directo: ${enlace}`
     );
     window.open(`https://wa.me/${TU_WHATSAPP}?text=${msg}`);
 }
+
+// INICIAR TODO
+mostrarPago();
+dibujarBotonesTallas();
+mostrarProductos();
 </script>
 </body>
 </html>
