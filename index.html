@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👟 Tienda de Tenis — Modelos Únicos</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .qr-img {
+            max-width: 280px;  /* ✅ MÁS GRANDE */
+            width: 85%;
+            border-radius: 12px;
+            margin: 15px auto;
+            display: block;
+            border: 3px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+        .pago {text-align: center;}
+        .dato {font-size: 16px; margin: 8px 0;}
+    </style>
 </head>
 <body>
 <div class="contenedor">
     <header>
-        <h1>👟 TIENDA DE TENIS </h1>
+        <h1>👟 TIENDA DE TENIS PRO</h1>
         <p class="subtitulo">Modelos únicos — Elige y compra directo 🚀</p>
     </header>
 
@@ -17,9 +30,9 @@
         <h3>💳 FORMA DE PAGO</h3>
         <p class="dato"><strong>Nombre:</strong> <span id="nombre-dato"></span></p>
         <p class="dato"><strong id="banco-titulo"></strong>: <span id="banco-dato"></span></p>
-        <img src="" alt="Código QR de Pago" class="qr-img" id="qr-imagen">
-        <p style="margin-top:15px; font-size:14px; color:#aaa;">📱 Escanea el QR → paga → manda comprobante por WhatsApp</p>
-        <p style="margin-top:10px; color:#00ff88; font-weight:bold;" id="entrega-dato"></p>
+        <img src="" alt="Código QR de Pago — Escanea para pagar" class="qr-img" id="qr-imagen">
+        <p style="margin-top:15px; font-size:15px; color:#aaa;">📱 Escanea el código QR → paga → manda comprobante por WhatsApp</p>
+        <p style="margin-top:10px; color:#00ff88; font-weight:bold; font-size:15px;" id="entrega-dato"></p>
     </div>
 
     <div class="filtros">
@@ -44,18 +57,10 @@
 
 <script src="datos.js"></script>
 <script>
-let productos = [];
+let productos = [...DATOS_INICIALES];
 
-async function cargarTodo() {
-    try {
-        const resp = await fetch('productos.json');
-        productos = resp.ok ? await resp.json() : DATOS_INICIALES;
-    } catch {
-        productos = DATOS_INICIALES;
-    }
-    mostrarPago();
-    mostrarProductos('todos');
-}
+mostrarPago();
+mostrarProductos('todos');
 
 function mostrarPago() {
     document.getElementById('nombre-dato').textContent = DATOS_PAGO.nombre;
@@ -97,20 +102,16 @@ function mostrarProductos(filtro = 'todos') {
     }
 }
 
-// ✅ MENSAJE COMPLETO CON ENLACE
 function comprarDirecto(id, nombre, talla, precio) {
-    // 👇 Aquí va tu enlace cuando lo tengas en internet
-    const enlaceTienda = window.location.href; // Automático ✅
-    
-    const mensaje = encodeURIComponent(
+    const enlace = window.location.href;
+    const msg = encodeURIComponent(
         `Hola! 👟 Me interesa este modelo:\n\n` +
         `📦 Modelo: ${nombre}\n` +
         `👞 Talla: ${talla}\n` +
         `💰 Precio: ${precio} Bs\n\n` +
-        `🔗 Ver en la tienda: ${enlaceTienda}\n\n` +
-        `Quedo atento para el pago y entrega ✅`
+        `🔗 Ver en la tienda: ${enlace}\n\nQuedo atento para el pago y entrega ✅`
     );
-    window.open(`https://wa.me/${TU_WHATSAPP}?text=${mensaje}`);
+    window.open(`https://wa.me/${TU_WHATSAPP}?text=${msg}`);
 }
 
 document.querySelectorAll('.talla-btn').forEach(btn => {
@@ -120,8 +121,6 @@ document.querySelectorAll('.talla-btn').forEach(btn => {
         mostrarProductos(btn.dataset.talla);
     });
 });
-
-cargarTodo();
 </script>
 </body>
 </html>
