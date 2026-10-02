@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .qr-img {
-            max-width: 280px;  /* ✅ MÁS GRANDE */
+            max-width: 280px;
             width: 85%;
             border-radius: 12px;
             margin: 15px auto;
@@ -17,6 +17,39 @@
         }
         .pago {text-align: center;}
         .dato {font-size: 16px; margin: 8px 0;}
+        .numero-etiqueta {
+            display: inline-block;
+            background: #22d3ee;
+            color: #000;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+        .producto {
+            scroll-margin-top: 80px;
+            transition: box-shadow 0.5s ease, transform 0.5s ease;
+        }
+        .producto.destacado {
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.8);
+            transform: scale(1.02);
+            border-color: #22d3ee !important;
+        }
+        .copiar-enlace {
+            background: #1e293b;
+            border: none;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .copiar-enlace:hover {
+            color: #22d3ee;
+        }
     </style>
 </head>
 <body>
@@ -59,8 +92,28 @@
 <script>
 let productos = [...DATOS_INICIALES];
 
+// Asignar número automático
+productos.forEach((p, i) => p.numero = i + 1);
+
 mostrarPago();
 mostrarProductos('todos');
+
+// ✅ SE DIRIGE DIRECTO AL TENIS AL ENTRAR
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const hash = window.location.hash;
+        if (!hash) return;
+        
+        const idBuscado = hash.replace('#tenis-', '');
+        const elemento = document.querySelector(`[data-id="${idBuscado}"]`);
+        
+        if (elemento) {
+            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            elemento.classList.add('destacado');
+            setTimeout(() => elemento.classList.remove('destacado'), 4000);
+        }
+    }, 400);
+});
 
 function mostrarPago() {
     document.getElementById('nombre-dato').textContent = DATOS_PAGO.nombre;
@@ -75,14 +128,19 @@ function mostrarProductos(filtro = 'todos') {
     grid.innerHTML = '';
     
     productos.forEach(p => {
-        const mostrar = filtro === 'todos' || p.tallaUnica === parseInt(filtro);
-        if (!mostrar) return;
+        if (filtro !== 'todos' && p.tallaUnica !== parseInt(filtro)) return;
+        
+        const enlaceBase = window.location.origin + window.location.pathname;
+        const enlaceDirecto = `${enlaceBase}#tenis-${p.id}`;
         
         grid.innerHTML += `
-        <div class="producto">
+        <div class="producto" data-id="${p.id}">
             <img src="${p.imagen}" class="prod-img" alt="${p.nombre}" loading="lazy">
             <div class="prod-info">
-                <h4 class="prod-nombre">${p.nombre}</h4>
+                <h4 class="prod-nombre">
+                    <span class="numero-etiqueta">#${p.numero}</span>
+                    ${p.nombre}
+                </h4>
                 <p class="prod-precio">${p.precio} Bs</p>
                 <span class="prod-talla">👟 Talla ${p.tallaUnica}</span>
                 <p class="${p.disponible ? 'disponible' : 'vendido'}">
@@ -90,8 +148,11 @@ function mostrarProductos(filtro = 'todos') {
                 </p>
                 <button class="comprar-btn ${p.disponible ? 'btn-disponible' : 'btn-vendido'}" 
                     ${!p.disponible ? 'disabled' : ''} 
-                    onclick="comprarDirecto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.tallaUnica}, ${p.precio})">
+                    onclick="comprarDirecto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.numero}, ${p.tallaUnica}, ${p.precio})">
                     ${p.disponible ? '🛒 COMPRAR ESTE' : 'AGOTADO'}
+                </button>
+                <button class="copiar-enlace" onclick="copiarEnlace('${enlaceDirecto}', ${p.numero})">
+                    📋 Copiar enlace del #${p.numero}
                 </button>
             </div>
         </div>`;
@@ -102,14 +163,23 @@ function mostrarProductos(filtro = 'todos') {
     }
 }
 
-function comprarDirecto(id, nombre, talla, precio) {
-    const enlace = window.location.href;
+function copiarEnlace(enlace, numero) {
+    navigator.clipboard.writeText(enlace).then(() => {
+        alert(`✅ Enlace del #${numero} copiado!\nPégalo en WhatsApp`);
+    }).catch(() => {
+        alert(`Enlace del #${numero}:\n${enlace}`);
+    });
+}
+
+function comprarDirecto(id, nombre, numero, talla, precio) {
+    const enlaceConProducto = `${window.location.origin}${window.location.pathname}#tenis-${id}`;
     const msg = encodeURIComponent(
         `Hola! 👟 Me interesa este modelo:\n\n` +
-        `📦 Modelo: ${nombre}\n` +
+        `🔢 Modelo #${numero}\n` +
+        `📦 Nombre: ${nombre}\n` +
         `👞 Talla: ${talla}\n` +
         `💰 Precio: ${precio} Bs\n\n` +
-        `🔗 Ver en la tienda: ${enlace}\n\nQuedo atento para el pago y entrega ✅`
+        `🔗 Ver directo: ${enlaceConProducto}\n\nQuedo atento ✅`
     );
     window.open(`https://wa.me/${TU_WHATSAPP}?text=${msg}`);
 }
