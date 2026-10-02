@@ -6,14 +6,37 @@
     <title>👟 Tienda de Tenis — Modelos Únicos</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .contenedor-qr {
+            position: relative;
+            display: inline-block;
+            margin: 15px 0;
+        }
         .qr-img {
-            max-width: 280px;
-            width: 85%;
+            max-width: 240px;
+            width: 80%;
             border-radius: 12px;
-            margin: 15px auto;
-            display: block;
             border: 3px solid rgba(0, 240, 255, 0.3);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+        }
+        .lupa-btn {
+            position: absolute;
+            bottom: 8px;
+            right: calc(10% + 8px);
+            background: rgba(0,0,0,0.7);
+            color: #22d3ee;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lupa-btn:hover {
+            background: #22d3ee;
+            color: #000;
         }
         .pago {text-align: center;}
         .dato {font-size: 16px; margin: 8px 0;}
@@ -36,6 +59,55 @@
             transform: scale(1.02);
             border-color: #22d3ee !important;
         }
+        .filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .talla-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #1e293b;
+            color: white;
+        }
+        .talla-btn.activo {
+            background: linear-gradient(90deg, #22d3ee, #10b981);
+            color: #000;
+        }
+        /* QR GRANDE */
+        .ventana-qr-grande {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .qr-grande-imagen {
+            max-width: 90%;
+            max-height: 75vh;
+            border-radius: 12px;
+            border: 4px solid #22d3ee;
+        }
+        .btn-cerrar-qr {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -49,18 +121,18 @@
         <h3>💳 FORMA DE PAGO</h3>
         <p class="dato"><strong>Nombre:</strong> <span id="nombre-dato"></span></p>
         <p class="dato"><strong id="banco-titulo"></strong>: <span id="banco-dato"></span></p>
-        <img src="" alt="Código QR de Pago — Escanea para pagar" class="qr-img" id="qr-imagen">
+        
+        <div class="contenedor-qr">
+            <img src="" alt="Código QR de Pago" class="qr-img" id="qr-imagen">
+            <button class="lupa-btn" onclick="abrirQRgrande()">🔍</button>
+        </div>
+        
         <p style="margin-top:15px; font-size:15px; color:#aaa;">📱 Escanea el código QR → paga → manda comprobante por WhatsApp</p>
         <p style="margin-top:10px; color:#00ff88; font-weight:bold; font-size:15px;" id="entrega-dato"></p>
     </div>
 
-    <div class="filtros">
-        <button class="talla-btn activo" data-talla="todos">Todos los modelos</button>
-        <button class="talla-btn" data-talla="38">Talla 38</button>
-        <button class="talla-btn" data-talla="39">Talla 39</button>
-        <button class="talla-btn" data-talla="40">Talla 40</button>
-        <button class="talla-btn" data-talla="41">Talla 41</button>
-        <button class="talla-btn" data-talla="42">Talla 42</button>
+    <div class="filtros" id="filtros-tallas">
+        <!-- Los botones aparecen SOLOS aquí -->
     </div>
 
     <div class="grid" id="productos">
@@ -74,25 +146,58 @@
     </footer>
 </div>
 
+<!-- QR GRANDE -->
+<div class="ventana-qr-grande" id="ventanaQR" onclick="cerrarQRgrande()">
+    <img src="" alt="QR en grande" class="qr-grande-imagen" id="qr-imagen-grande">
+    <button class="btn-cerrar-qr">✖ Cerrar</button>
+</div>
+
 <script src="datos.js"></script>
 <script>
 let productos = [...DATOS_INICIALES];
+let filtroActivo = 'todos';
 
-// Asignar número automático
+// Numerar tenis
 productos.forEach((p, i) => p.numero = i + 1);
 
+// ✅ OBTENER SOLO LAS TALLAS QUE EXISTEN
+function obtenerTallasDisponibles() {
+    const tallasUnicas = [...new Set(productos.map(p => p.tallaUnica))];
+    return tallasUnicas.sort((a, b) => a - b); // Ordena de menor a mayor
+}
+
+// ✅ CREAR BOTONES DINÁMICAMENTE
+function dibujarBotonesTallas() {
+    const contenedor = document.getElementById('filtros-tallas');
+    const tallas = obtenerTallasDisponibles();
+    
+    contenedor.innerHTML = `<button class="talla-btn ${filtroActivo==='todos'?'activo':''}" data-talla="todos">Todos</button>`;
+    
+    tallas.forEach(talla => {
+        contenedor.innerHTML += `<button class="talla-btn ${filtroActivo===talla?'activo':''}" data-talla="${talla}">${talla}</button>`;
+    });
+
+    // Agregar eventos a los botones nuevos
+    document.querySelectorAll('.talla-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filtroActivo = btn.dataset.talla;
+            dibujarBotonesTallas(); // Actualiza botones
+            mostrarProductos(filtroActivo);
+        });
+    });
+}
+
 mostrarPago();
+dibujarBotonesTallas();
 mostrarProductos('todos');
 
-// ✅ Se dirige directo al tenis al tocar el enlace
+// ✅ Ir directo al tenis desde el enlace
 window.addEventListener('load', () => {
     setTimeout(() => {
         const hash = window.location.hash;
         if (!hash) return;
-        
         const idBuscado = hash.replace('#tenis-', '');
         const elemento = document.querySelector(`[data-id="${idBuscado}"]`);
-        
         if (elemento) {
             elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
             elemento.classList.add('destacado');
@@ -106,7 +211,18 @@ function mostrarPago() {
     document.getElementById('banco-titulo').textContent = DATOS_PAGO.banco;
     document.getElementById('banco-dato').textContent = DATOS_PAGO.numeroCuenta;
     document.getElementById('qr-imagen').src = DATOS_PAGO.qrImagen;
+    document.getElementById('qr-imagen-grande').src = DATOS_PAGO.qrImagen;
     document.getElementById('entrega-dato').textContent = DATOS_PAGO.entrega;
+}
+
+function abrirQRgrande() {
+    document.getElementById('ventanaQR').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarQRgrande() {
+    document.getElementById('ventanaQR').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 function mostrarProductos(filtro = 'todos') {
@@ -139,7 +255,7 @@ function mostrarProductos(filtro = 'todos') {
     });
     
     if (!grid.innerHTML) {
-        grid.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No hay modelos disponibles en esta talla por ahora 😊</p>`;
+        grid.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No hay modelos disponibles en esta talla 😊</p>`;
     }
 }
 
@@ -155,14 +271,6 @@ function comprarDirecto(id, nombre, numero, talla, precio) {
     );
     window.open(`https://wa.me/${TU_WHATSAPP}?text=${msg}`);
 }
-
-document.querySelectorAll('.talla-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activo'));
-        btn.classList.add('activo');
-        mostrarProductos(btn.dataset.talla);
-    });
-});
 </script>
 </body>
 </html>
