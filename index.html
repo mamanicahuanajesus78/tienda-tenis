@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👟 Tienda de Tenis — Modelos Únicos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="contenedor">
+    <header>
+        <h1>👟 TIENDA DE TENIS </h1>
+        <p class="subtitulo">Modelos únicos — Elige y compra directo 🚀</p>
+    </header>
+
+    <div class="pago" id="seccion-pago">
+        <h3>💳 FORMA DE PAGO</h3>
+        <p class="dato"><strong>Nombre:</strong> <span id="nombre-dato"></span></p>
+        <p class="dato"><strong id="banco-titulo"></strong>: <span id="banco-dato"></span></p>
+        <img src="" alt="Código QR de Pago" class="qr-img" id="qr-imagen">
+        <p style="margin-top:15px; font-size:14px; color:#aaa;">📱 Escanea el QR → paga → manda comprobante por WhatsApp</p>
+        <p style="margin-top:10px; color:#00ff88; font-weight:bold;" id="entrega-dato"></p>
+    </div>
+
+    <div class="filtros">
+        <button class="talla-btn activo" data-talla="todos">Todos los modelos</button>
+        <button class="talla-btn" data-talla="38">Talla 38</button>
+        <button class="talla-btn" data-talla="39">Talla 39</button>
+        <button class="talla-btn" data-talla="40">Talla 40</button>
+        <button class="talla-btn" data-talla="41">Talla 41</button>
+        <button class="talla-btn" data-talla="42">Talla 42</button>
+    </div>
+
+    <div class="grid" id="productos">
+        <p style="text-align:center; color:#aaa; padding:40px; font-size:18px;">Cargando modelos...</p>
+    </div>
+
+    <footer>
+        💬 Al comprar te escribo por WhatsApp y coordinamos la entrega 🚚
+        <br><br>
+        <a href="admin.html">🔐 Panel de Administración</a>
+    </footer>
+</div>
+
+<script src="datos.js"></script>
+<script>
+let productos = [];
+
+async function cargarTodo() {
+    try {
+        const resp = await fetch('productos.json');
+        productos = resp.ok ? await resp.json() : DATOS_INICIALES;
+    } catch {
+        productos = DATOS_INICIALES;
+    }
+    mostrarPago();
+    mostrarProductos('todos');
+}
+
+function mostrarPago() {
+    document.getElementById('nombre-dato').textContent = DATOS_PAGO.nombre;
+    document.getElementById('banco-titulo').textContent = DATOS_PAGO.banco;
+    document.getElementById('banco-dato').textContent = DATOS_PAGO.numeroCuenta;
+    document.getElementById('qr-imagen').src = DATOS_PAGO.qrImagen;
+    document.getElementById('entrega-dato').textContent = DATOS_PAGO.entrega;
+}
+
+function mostrarProductos(filtro = 'todos') {
+    const grid = document.getElementById('productos');
+    grid.innerHTML = '';
+    
+    productos.forEach(p => {
+        const mostrar = filtro === 'todos' || p.tallaUnica === parseInt(filtro);
+        if (!mostrar) return;
+        
+        grid.innerHTML += `
+        <div class="producto">
+            <img src="${p.imagen}" class="prod-img" alt="${p.nombre}" loading="lazy">
+            <div class="prod-info">
+                <h4 class="prod-nombre">${p.nombre}</h4>
+                <p class="prod-precio">${p.precio} Bs</p>
+                <span class="prod-talla">👟 Talla ${p.tallaUnica}</span>
+                <p class="${p.disponible ? 'disponible' : 'vendido'}">
+                    ${p.disponible ? '✅ DISPONIBLE' : '❌ VENDIDO'}
+                </p>
+                <button class="comprar-btn ${p.disponible ? 'btn-disponible' : 'btn-vendido'}" 
+                    ${!p.disponible ? 'disabled' : ''} 
+                    onclick="comprarDirecto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}', ${p.tallaUnica}, ${p.precio})">
+                    ${p.disponible ? '🛒 COMPRAR ESTE' : 'AGOTADO'}
+                </button>
+            </div>
+        </div>`;
+    });
+    
+    if (!grid.innerHTML) {
+        grid.innerHTML = `<p style="text-align:center; color:#888; padding:40px;">No hay modelos disponibles en esta talla por ahora 😊</p>`;
+    }
+}
+
+// ✅ MENSAJE COMPLETO CON ENLACE
+function comprarDirecto(id, nombre, talla, precio) {
+    // 👇 Aquí va tu enlace cuando lo tengas en internet
+    const enlaceTienda = window.location.href; // Automático ✅
+    
+    const mensaje = encodeURIComponent(
+        `Hola! 👟 Me interesa este modelo:\n\n` +
+        `📦 Modelo: ${nombre}\n` +
+        `👞 Talla: ${talla}\n` +
+        `💰 Precio: ${precio} Bs\n\n` +
+        `🔗 Ver en la tienda: ${enlaceTienda}\n\n` +
+        `Quedo atento para el pago y entrega ✅`
+    );
+    window.open(`https://wa.me/${TU_WHATSAPP}?text=${mensaje}`);
+}
+
+document.querySelectorAll('.talla-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activo'));
+        btn.classList.add('activo');
+        mostrarProductos(btn.dataset.talla);
+    });
+});
+
+cargarTodo();
+</script>
+</body>
+</html>
