@@ -112,6 +112,38 @@ function verFoto(e) {
     r.readAsDataURL(f);
 }
 
+async function publicarCambios(mensaje = 'Actualización automática') {
+    const contenido = `// Última actualización: ${new Date().toLocaleString()}
+const TU_WHATSAPP = "${TU_WHATSAPP}";
+const USUARIOS = ${JSON.stringify(USUARIOS, null, 4)};
+const DATOS_PAGO = ${JSON.stringify(DATOS_PAGO, null, 4)};
+const DATOS_INICIALES = ${JSON.stringify(productos, null, 4)};`;
+
+    mostrarMensaje('cargando', '⏳ Publicando cambios...');
+
+    try {
+        const resp = await fetch('/.netlify/functions/actualizar-datos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contenido, sha: shaActual })
+        });
+
+        const res = await resp.json();
+        
+        if (res.ok) {
+            shaActual = res.resultado.commit.sha;
+            mostrarMensaje('exito', '✅ ¡Publicado! Tienda actualizada');
+            setTimeout(() => ocultarMensaje(), 3000);
+            return true;
+        } else {
+            throw new Error('Error en la respuesta');
+        }
+    } catch (err) {
+        mostrarMensaje('error', '❌ No se pudo publicar: ' + err.message);
+        return false;
+    }
+}
+
 async function guardar() {
     const nombre = document.getElementById('f-nombre').value.trim();
     const precio = parseInt(document.getElementById('f-precio').value);
@@ -131,35 +163,17 @@ async function guardar() {
         productos.push({ id: Date.now(), nombre, precio, tallaUnica: talla, imagen, disponible: true });
     }
 
-    const contenido = `// Última actualización: ${new Date().toLocaleString()}
-const TU_WHATSAPP = "${TU_WHATSAPP}";
-const USUARIOS = ${JSON.stringify(USUARIOS, null, 4)};
-const DATOS_PAGO = ${JSON.stringify(DATOS_PAGO, null, 4)};
-const DATOS_INICIALES = ${JSON.stringify(productos, null, 4)};`;
-
-    mostrarMensaje('cargando', '⏳ Subiendo a internet...');
-
-    try {
-        const resp = await fetch('/.netlify/functions/actualizar-datos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contenido, sha: shaActual })
-        });
-
-        const res = await resp.json();
-        
-        if (res.ok) {
-            shaActual = res.resultado.commit.sha;
-            mostrarMensaje('exito', '✅ ¡Publicado! Tienda actualizada');
-            limpiarFormulario();
-            mostrarLista();
-            setTimeout(() => ocultarMensaje(), 4000);
-        } else {
-            throw new Error('Error en la respuesta');
-        }
-    } catch (err) {
-        mostrarMensaje('error', '❌ No se pudo publicar: ' + err.message);
+    const ok = await publicarCambios();
+    if (ok) {
+        limpiarFormulario();
+        mostrarLista();
     }
+}
+
+async function cambiarEstado(i) {
+    productos[i].disponible = !productos[i].disponible;
+    mostrarLista(); // Actualiza rápido en pantalla
+    await publicarCambios(); // ✅ AHORA SÍ GUARDA Y PUBLICA
 }
 
 function mostrarMensaje(tipo, texto) {
@@ -171,11 +185,6 @@ function mostrarMensaje(tipo, texto) {
 
 function ocultarMensaje() {
     document.getElementById('mensaje').style.display = 'none';
-}
-
-function cambiarEstado(i) {
-    productos[i].disponible = !productos[i].disponible;
-    mostrarLista();
 }
 
 function editar(i) {
@@ -199,10 +208,11 @@ function cancelar() {
     document.getElementById('btn-cancelar').style.display = 'none';
 }
 
-function borrar(i) {
+async function borrar(i) {
     if (!confirm('¿Seguro de borrar?')) return;
     productos.splice(i, 1);
     mostrarLista();
+    await publicarCambios(); // ✅ También guarda al borrar
 }
 
 function limpiarFormulario() {
