@@ -17,26 +17,29 @@
             border-radius: 12px;
             border: 3px solid rgba(0, 240, 255, 0.3);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            display: block;
+            margin: 0 auto;
         }
         .lupa-btn {
             position: absolute;
-            bottom: 8px;
-            right: calc(10% + 8px);
-            background: rgba(0,0,0,0.7);
-            color: #22d3ee;
+            top: 50%;
+            right: -5px;
+            transform: translateY(-50%);
+            background: #22d3ee;
+            color: #000;
             border: none;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
         }
         .lupa-btn:hover {
-            background: #22d3ee;
-            color: #000;
+            transform: translateY(-50%) scale(1.1);
         }
         .pago {text-align: center;}
         .dato {font-size: 16px; margin: 8px 0;}
@@ -65,6 +68,7 @@
             gap: 8px;
             justify-content: center;
             margin: 20px 0;
+            min-height: 50px;
         }
         .talla-btn {
             padding: 10px 16px;
@@ -74,6 +78,7 @@
             cursor: pointer;
             background: #1e293b;
             color: white;
+            transition: all 0.2s;
         }
         .talla-btn.activo {
             background: linear-gradient(90deg, #22d3ee, #10b981);
@@ -132,7 +137,7 @@
     </div>
 
     <div class="filtros" id="filtros-tallas">
-        <!-- Los botones aparecen SOLOS aquí -->
+        <!-- Botones aparecen solo aquí -->
     </div>
 
     <div class="grid" id="productos">
@@ -160,30 +165,47 @@ let filtroActivo = 'todos';
 // Numerar tenis
 productos.forEach((p, i) => p.numero = i + 1);
 
-// ✅ OBTENER SOLO LAS TALLAS QUE EXISTEN
+// ✅ SOLO TALLAS QUE EXISTEN — SIN DUPLICADOS
 function obtenerTallasDisponibles() {
-    const tallasUnicas = [...new Set(productos.map(p => p.tallaUnica))];
-    return tallasUnicas.sort((a, b) => a - b); // Ordena de menor a mayor
+    const vistas = {};
+    productos.forEach(p => {
+        vistas[p.tallaUnica] = true;
+    });
+    const tallas = Object.keys(vistas).map(Number).filter(n => !isNaN(n));
+    return tallas.sort((a, b) => a - b);
 }
 
-// ✅ CREAR BOTONES DINÁMICAMENTE
+// ✅ BOTONES LIMPIOS SIEMPRE
 function dibujarBotonesTallas() {
     const contenedor = document.getElementById('filtros-tallas');
+    contenedor.innerHTML = ''; // BORRA TODO ANTES DE VOLVER A PONER
+    
     const tallas = obtenerTallasDisponibles();
     
-    contenedor.innerHTML = `<button class="talla-btn ${filtroActivo==='todos'?'activo':''}" data-talla="todos">Todos</button>`;
+    // Botón Todos
+    const btnTodos = document.createElement('button');
+    btnTodos.className = `talla-btn ${filtroActivo==='todos'?'activo':''}`;
+    btnTodos.textContent = 'Todos';
+    btnTodos.dataset.talla = 'todos';
+    btnTodos.onclick = () => {
+        filtroActivo = 'todos';
+        dibujarBotonesTallas();
+        mostrarProductos('todos');
+    };
+    contenedor.appendChild(btnTodos);
     
+    // Botones de cada talla
     tallas.forEach(talla => {
-        contenedor.innerHTML += `<button class="talla-btn ${filtroActivo===talla?'activo':''}" data-talla="${talla}">${talla}</button>`;
-    });
-
-    // Agregar eventos a los botones nuevos
-    document.querySelectorAll('.talla-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            filtroActivo = btn.dataset.talla;
-            dibujarBotonesTallas(); // Actualiza botones
-            mostrarProductos(filtroActivo);
-        });
+        const btn = document.createElement('button');
+        btn.className = `talla-btn ${filtroActivo==talla?'activo':''}`;
+        btn.textContent = talla;
+        btn.dataset.talla = talla;
+        btn.onclick = () => {
+            filtroActivo = talla;
+            dibujarBotonesTallas();
+            mostrarProductos(talla);
+        };
+        contenedor.appendChild(btn);
     });
 }
 
@@ -191,7 +213,7 @@ mostrarPago();
 dibujarBotonesTallas();
 mostrarProductos('todos');
 
-// ✅ Ir directo al tenis desde el enlace
+// Ir directo al tenis
 window.addEventListener('load', () => {
     setTimeout(() => {
         const hash = window.location.hash;
@@ -230,7 +252,7 @@ function mostrarProductos(filtro = 'todos') {
     grid.innerHTML = '';
     
     productos.forEach(p => {
-        if (filtro !== 'todos' && p.tallaUnica !== parseInt(filtro)) return;
+        if (filtro !== 'todos' && p.tallaUnica !== filtro) return;
         
         grid.innerHTML += `
         <div class="producto" data-id="${p.id}">
