@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚙️ Panel de Administración</title>
+    <title>👟 Tienda de Tenis — Panel</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         * {margin:0; padding:0; box-sizing:border-box; font-family:system-ui, sans-serif;}
         body {background:#0f172a; color:white; padding:20px;}
-
-        /* LOGIN */
         .login {max-width:420px; margin:60px auto; padding:35px; background:#1e293b; border-radius:16px; border:2px solid #22d3ee;}
         h2 {text-align:center; color:#22d3ee; margin-bottom:25px;}
         input {width:100%; padding:14px; margin:8px 0; border-radius:10px; border:2px solid #22d3ee50; background:#0f172a; color:white; font-size:16px;}
@@ -20,8 +19,6 @@
         .btn-gris {background:#475569; color:white; margin-top:10px; display:none;}
         .error {color:#ef4444; text-align:center; margin-top:15px; display:none;}
         .enlace {display:block; text-align:center; color:#22d3ee; margin-top:20px; text-decoration:none;}
-
-        /* PANEL */
         .panel {display:none; max-width:800px; margin:0 auto;}
         .aviso {background:#1e3a2f; border:1px solid #10b981; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; color:#86efac;}
         .caja-form {background:#1e293b; padding:25px; border-radius:16px; margin-bottom:25px;}
@@ -39,71 +36,58 @@
 </head>
 <body>
 
-<!-- PANTALLA DE INGRESO -->
 <div id="pant-login" class="login">
     <h2>🔐 INICIAR SESIÓN</h2>
-    <input type="text" id="usuario" placeholder="Escribe tu usuario">
-    <input type="password" id="clave" placeholder="Escribe tu contraseña">
+    <input type="text" id="usuario" placeholder="Tu usuario">
+    <input type="password" id="clave" placeholder="Tu contraseña">
     <button id="boton-ingresar" class="btn-entrar">ENTRAR</button>
     <p id="aviso-mal" class="error">Usuario o contraseña incorrectos</p>
     <a href="index.html" class="enlace">← Volver a la tienda</a>
 </div>
 
-<!-- PANEL COMPLETO -->
 <div id="pant-panel" class="panel">
     <h2>⚙️ PANEL DE ADMINISTRACIÓN</h2>
-    <div class="aviso">✅ Los cambios se guardan aquí — luego subimos automático a la tienda</div>
+    <div class="aviso" id="barra-aviso">✅ Cargando tus tenis...</div>
     <div id="caja-msg" class="mensaje"></div>
 
-    <!-- FORMULARIO -->
     <div class="caja-form">
         <h3 id="tit-form">➕ AGREGAR NUEVO TENIS</h3>
-        
         <label>Nombre / Modelo</label>
         <input type="text" id="f-nombre" placeholder="Ej: Predator Negro-Blanco">
-        
         <label>Precio (Bolivianos)</label>
         <input type="number" id="f-precio" placeholder="Ej: 150">
-        
         <label>Talla</label>
         <input type="number" id="f-talla" placeholder="Ej: 38">
-        
         <label>Foto</label>
         <input type="file" id="f-foto" accept="image/*" onchange="cargarFoto(event)">
         <img id="vista-foto" class="foto-vista" alt="Vista previa">
-        
-        <button id="boton-guardar" class="btn-verde" onclick="guardar()">💾 GUARDAR</button>
+        <button id="boton-guardar" class="btn-verde" onclick="guardar()">💾 GUARDAR Y PUBLICAR</button>
         <button id="boton-cancelar" class="btn-gris" onclick="cancelar()">❌ CANCELAR</button>
     </div>
 
-    <!-- LISTA DE TENIS -->
-    <h3 style="color:#22d3ee;">📋 MIS TENIS</h3>
+    <h3 style="color:#22d3ee;">📋 MIS TENIS — TODOS APARECEN AQUÍ</h3>
     <div id="lista"></div>
 
     <button class="cerrar" onclick="salir()">Cerrar sesión</button>
     <a href="index.html" class="enlace">← Ir a la tienda</a>
 </div>
 
+<script src="datos.js"></script>
 <script>
 // ==============================================
-// 🔑 TUS DATOS — NO TOCAR
+// 🔑 CONFIGURACIÓN — NO TOCAR
 // ==============================================
-const ACCESO = {
-  "jesus": "mamani",
-  "yhubanneth": "71931423"
+const ACCESO = USUARIOS;
+const CONFIG = {
+  REPO: "mamanicahuanajesus78/tienda-tenis",
+  ARCHIVO: "datos.js",
+  RAMA: "main"
 };
 
-// ==============================================
-// 📋 LISTA DE TENIS — AQUÍ SE GUARDA TODO
-// ==============================================
-let tenis = [];
+let tenis = [...DATOS_INICIALES]; // ✅ CARGA TODOS TUS TENIS AUTOMÁTICO
 let modoEditar = null;
 let fotoGuardada = null;
-
-// CARGAR LOS TENIS DESDE datos.js SI EXISTE
-if (typeof DATOS_INICIALES !== 'undefined') {
-    tenis = [...DATOS_INICIALES];
-}
+let tokenGitHub = null;
 
 // ==============================================
 // 🔓 INICIO DE SESIÓN
@@ -115,26 +99,40 @@ function verificarAcceso() {
     const cla = document.getElementById('clave').value.trim();
     
     if (ACCESO[usu] && ACCESO[usu] === cla) {
-        // ✅ CORRECTO — MOSTRAMOS PANEL
         document.getElementById('pant-login').style.display = 'none';
         document.getElementById('pant-panel').style.display = 'block';
-        mostrarLista();
+        
+        // Buscar token de GitHub
+        tokenGitHub = buscarToken();
+        if (tokenGitHub) {
+            document.getElementById('barra-aviso').textContent = '✅ Conectado — se publica automático en 1 minuto';
+        } else {
+            document.getElementById('barra-aviso').textContent = '⚠️ Funciona local — sube a GitHub manualmente';
+        }
+        
+        mostrarLista(); // ✅ MUESTRA TODOS TUS TENIS
     } else {
-        // ❌ INCORRECTO
         document.getElementById('aviso-mal').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('aviso-mal').style.display = 'none';
-        }, 3000);
+        setTimeout(() => document.getElementById('aviso-mal').style.display = 'none', 3000);
     }
 }
 
 // ==============================================
-// 📷 FOTO
+// 🔑 BUSCAR TOKEN DE GITHUB
+// ==============================================
+function buscarToken() {
+    if (typeof window.GITHUB_TOKEN !== 'undefined') return window.GITHUB_TOKEN;
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GITHUB_TOKEN)
+        return import.meta.env.VITE_GITHUB_TOKEN;
+    return null;
+}
+
+// ==============================================
+// 📷 CARGAR FOTO
 // ==============================================
 function cargarFoto(e) {
     const archivo = e.target.files[0];
     if (!archivo) return;
-    
     const lector = new FileReader();
     lector.onload = function(datos) {
         fotoGuardada = datos.target.result;
@@ -147,47 +145,49 @@ function cargarFoto(e) {
 // ==============================================
 // 💾 GUARDAR — AGREGAR O EDITAR
 // ==============================================
-function guardar() {
+async function guardar() {
     const nombre = document.getElementById('f-nombre').value.trim();
     const precio = parseInt(document.getElementById('f-precio').value);
     const talla = parseInt(document.getElementById('f-talla').value);
     
     if (!nombre || !precio || !talla) {
-        mostrarMensaje('mal', '⚠️ Escribe nombre, precio y talla');
+        mostrarMensaje('mal', '⚠️ Llena nombre, precio y talla');
         return;
     }
     
     const imagen = fotoGuardada || (modoEditar !== null ? tenis[modoEditar].imagen : null);
     if (!imagen) {
-        mostrarMensaje('mal', '⚠️ Sube una foto del tenis');
+        mostrarMensaje('mal', '⚠️ Elige una foto');
         return;
     }
 
     if (modoEditar !== null) {
-        // EDITAR EXISTENTE
-        tenis[modoEditar] = {
-            ...tenis[modoEditar],
-            nombre, precio, tallaUnica: talla, imagen
-        };
+        // ✏️ EDITAR
+        tenis[modoEditar] = {...tenis[modoEditar], nombre, precio, tallaUnica: talla, imagen};
         modoEditar = null;
         document.getElementById('tit-form').textContent = '➕ AGREGAR NUEVO TENIS';
         document.getElementById('boton-cancelar').style.display = 'none';
     } else {
-        // AGREGAR NUEVO
-        tenis.push({
-            id: Date.now(),
-            nombre, precio, tallaUnica: talla,
-            imagen, disponible: true
-        });
+        // ➕ AGREGAR NUEVO
+        tenis.push({id: Date.now(), nombre, precio, tallaUnica: talla, imagen, disponible: true});
     }
 
+    await publicarGitHub();
     limpiarFormulario();
     mostrarLista();
-    mostrarMensaje('bien', '✅ ¡Guardado! En la tienda se actualiza pronto');
 }
 
 // ==============================================
-// ✏️ EDITAR
+// ✅ CAMBIAR ESTADO: VENDIDO / DISPONIBLE
+// ==============================================
+async function cambiarEstado(numero) {
+    tenis[numero].disponible = !tenis[numero].disponible;
+    mostrarLista();
+    await publicarGitHub();
+}
+
+// ==============================================
+// ✏️ EDITAR TENIS
 // ==============================================
 function editar(numero) {
     const t = tenis[numero];
@@ -215,24 +215,17 @@ function cancelar() {
 }
 
 // ==============================================
-// ✅ MARCAR VENDIDO / DISPONIBLE
+// 🗑️ BORRAR TENIS
 // ==============================================
-function cambiarEstado(numero) {
-    tenis[numero].disponible = !tenis[numero].disponible;
-    mostrarLista();
-}
-
-// ==============================================
-// 🗑️ BORRAR
-// ==============================================
-function borrar(numero) {
+async function borrar(numero) {
     if (!confirm('¿Seguro que quieres borrar este tenis?')) return;
     tenis.splice(numero, 1);
     mostrarLista();
+    await publicarGitHub();
 }
 
 // ==============================================
-// 📋 MOSTRAR LISTA
+// 📋 MOSTRAR LISTA COMPLETA
 // ==============================================
 function mostrarLista() {
     const caja = document.getElementById('lista');
@@ -261,6 +254,63 @@ function mostrarLista() {
 }
 
 // ==============================================
+// 🚀 PUBLICAR A GITHUB — TODO EL MUNDO LO VE
+// ==============================================
+async function publicarGitHub() {
+    if (!tokenGitHub) {
+        mostrarMensaje('mal', '⚠️ Sin conexión automática — sube datos.js a GitHub manualmente');
+        return false;
+    }
+
+    mostrarMensaje('carga', '⏳ Subiendo a GitHub...');
+
+    // Construir archivo completo
+    const contenido = `// ACTUALIZADO: ${new Date().toLocaleString()}
+const TU_WHATSAPP = "${TU_WHATSAPP}";
+const USUARIOS = ${JSON.stringify(USUARIOS, null, 4)};
+const DATOS_PAGO = ${JSON.stringify(DATOS_PAGO, null, 4)};
+const DATOS_INICIALES = ${JSON.stringify(tenis, null, 4)};`;
+
+    try {
+        // 1. Leer versión actual
+        const respArch = await fetch(
+            `https://api.github.com/repos/${CONFIG.REPO}/contents/${CONFIG.ARCHIVO}`,
+            {headers: {Authorization: `token ${tokenGitHub}`, "User-Agent": "Tienda-Tenis"}}
+        );
+        if (!respArch.ok) throw new Error('No se pudo leer GitHub');
+        const datosArch = await respArch.json();
+
+        // 2. Subir versión nueva
+        const respSubida = await fetch(
+            `https://api.github.com/repos/${CONFIG.REPO}/contents/${CONFIG.ARCHIVO}`,
+            {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${tokenGitHub}`,
+                    "Content-Type": "application/json",
+                    "User-Agent": "Tienda-Tenis"
+                },
+                body: JSON.stringify({
+                    message: `Actualización — ${new Date().toLocaleString()}`,
+                    content: btoa(unescape(encodeURIComponent(contenido))),
+                    sha: datosArch.sha,
+                    branch: CONFIG.RAMA
+                })
+            }
+        );
+
+        if (!respSubida.ok) throw new Error('Error al subir');
+        
+        mostrarMensaje('bien', '✅ ¡PUBLICADO! Espera 1 minuto y recarga la tienda');
+        return true;
+
+    } catch (err) {
+        mostrarMensaje('mal', '❌ ' + err.message + ' — sube datos.js a GitHub manualmente');
+        return false;
+    }
+}
+
+// ==============================================
 // 🔧 FUNCIONES AUXILIARES
 // ==============================================
 function limpiarFormulario() {
@@ -277,7 +327,7 @@ function mostrarMensaje(tipo, texto) {
     m.className = 'mensaje msg-' + tipo;
     m.textContent = texto;
     m.style.display = 'block';
-    setTimeout(() => m.style.display = 'none', 4000);
+    setTimeout(() => m.style.display = 'none', 6000);
 }
 
 function salir() {
