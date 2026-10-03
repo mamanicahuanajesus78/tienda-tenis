@@ -76,6 +76,7 @@ let fotoBase64 = null;
 function entrar() {
     const u = document.getElementById('usuario').value.trim();
     const c = document.getElementById('clave').value.trim();
+    
     if (USUARIOS[u] && USUARIOS[u] === c) {
         document.getElementById('login').style.display = 'none';
         document.getElementById('panel').style.display = 'block';
@@ -108,12 +109,12 @@ const DATOS_INICIALES = ${JSON.stringify(productos, null, 4)};`;
     mostrarMensaje('cargando', '⏳ Publicando cambios...');
 
     try {
-        const GITHUB_TOKEN = import.meta.env?.VITE_GITHUB_TOKEN || process.env?.GITHUB_TOKEN;
+        const GITHUB_TOKEN = import.meta.env?.VITE_GITHUB_TOKEN || window.GITHUB_TOKEN;
         const REPO = "mamanicahuanajesus78/tienda-tenis";
         const RUTA = "datos.js";
 
         if (!GITHUB_TOKEN) {
-            throw new Error('Falta configurar el token en Vercel');
+            throw new Error('Falta configurar el token en Vercel → Environment Variables → GITHUB_TOKEN');
         }
 
         const respArch = await fetch(
