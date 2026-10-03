@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Panel</title>
+    <title>⚙️ Panel de Administración</title>
     <style>
         * {margin:0; padding:0; box-sizing:border-box; font-family:system-ui;}
         body {background:#0f172a; color:white; padding:20px;}
@@ -16,6 +16,7 @@
         .aviso {background:#1e3a2f; border:1px solid #10b981; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; color:#86efac;}
         .caja-form {background:#1e293b; padding:25px; border-radius:16px; margin-bottom:25px;}
         .tenis {background:#1e293b; padding:18px; border-radius:12px; margin-bottom:12px;}
+        .foto-tenis {max-width:120px; border-radius:8px; margin:8px 0;}
         .fila-botones {display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
         .fila-botones button {flex:1; min-width:100px; padding:10px; font-size:14px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;}
         .btn-verde {background:linear-gradient(90deg,#10b981,#22c55e); color:#000;}
@@ -44,7 +45,7 @@
 
 <div id="panel" class="panel">
     <h2>⚙️ PANEL DE ADMINISTRACIÓN</h2>
-    <div class="aviso">✅ Tus tenis cargados — guárdalos y sube datos.js a GitHub para publicar</div>
+    <div class="aviso">✅ Tus tenis cargados — cuando termines, sube datos.js a GitHub para que todos lo vean</div>
     <div id="cajaMensaje" class="mensaje"></div>
 
     <div class="caja-form">
@@ -62,7 +63,7 @@
         <button id="botonCancelar" class="btn-gris" onclick="cancelar()">❌ CANCELAR</button>
     </div>
 
-    <h3 style="color:#22d3ee;">📋 MIS TENIS</h3>
+    <h3 style="color:#22d3ee;">📋 MIS TENIS — CON FOTO</h3>
     <div id="lista"></div>
 
     <button class="cerrar" onclick="salir()">Cerrar sesión</button>
@@ -72,20 +73,19 @@
 <script src="datos.js"></script>
 <script>
 // ==============================================
-// TUS DATOS — NO CAMBIAN
+// TUS DATOS
 // ==============================================
 const ACCESO = {
   "jesus": "mamani",
   "yhubanneth": "71931423"
 };
 
-// CARGA TUS TENIS DE datos.js
 let tenis = [...DATOS_INICIALES];
 let modoEditar = null;
 let fotoGuardada = null;
 
 // ==============================================
-// INICIO DE SESIÓN — IGUAL QUE EL QUE YA FUNCIONÓ
+// INICIO DE SESIÓN
 // ==============================================
 document.getElementById('botonEntrar').addEventListener('click', function() {
     const usu = document.getElementById('usuario').value.trim();
@@ -94,7 +94,7 @@ document.getElementById('botonEntrar').addEventListener('click', function() {
     if (ACCESO[usu] && ACCESO[usu] === cla) {
         document.getElementById('login').style.display = 'none';
         document.getElementById('panel').style.display = 'block';
-        mostrarLista(); // ✅ APARECEN TUS 5 TENIS
+        mostrarLista();
     } else {
         document.getElementById('mensajeError').style.display = 'block';
         setTimeout(() => document.getElementById('mensajeError').style.display = 'none', 3000);
@@ -102,7 +102,7 @@ document.getElementById('botonEntrar').addEventListener('click', function() {
 });
 
 // ==============================================
-// FOTO
+// FOTO NUEVA QUE SUBES
 // ==============================================
 function cargarFoto(e) {
     const archivo = e.target.files[0];
@@ -146,11 +146,11 @@ function guardar() {
 
     limpiarFormulario();
     mostrarLista();
-    mostrarMensaje('bien', '✅ ¡Guardado! Sube datos.js a GitHub para que todos lo vean');
+    mostrarMensaje('bien', '✅ ¡Guardado! Abre datos.js → copia todo → entra a GitHub → pega → Commit');
 }
 
 // ==============================================
-// CAMBIAR VENDIDO/DISPONIBLE
+// CAMBIAR VENDIDO / DISPONIBLE
 // ==============================================
 function cambiarEstado(i) {
     tenis[i].disponible = !tenis[i].disponible;
@@ -165,7 +165,7 @@ function editar(i) {
     document.getElementById('fNombre').value = t.nombre;
     document.getElementById('fPrecio').value = t.precio;
     document.getElementById('fTalla').value = t.tallaUnica;
-    if (t.imagen && t.imagen.startsWith('data:')) {
+    if (t.imagen) {
         fotoGuardada = t.imagen;
         document.getElementById('vistaFoto').src = t.imagen;
         document.getElementById('vistaFoto').style.display = 'block';
@@ -193,7 +193,7 @@ function borrar(i) {
 }
 
 // ==============================================
-// MOSTRAR LISTA
+// ✅ AQUÍ SE MUESTRAN LAS FOTOS — YA ARREGLADO
 // ==============================================
 function mostrarLista() {
     const caja = document.getElementById('lista');
@@ -202,8 +202,15 @@ function mostrarLista() {
         const estado = t.disponible 
             ? '<span style="color:#86efac;">✅ DISPONIBLE</span>' 
             : '<span style="color:#fca5a5;">❌ VENDIDO</span>';
+        
+        // ✅ LA FOTO APARECE AHORITA
+        const foto = t.imagen 
+            ? `<img src="${t.imagen}" class="foto-tenis" alt="${t.nombre}">` 
+            : '';
+        
         caja.innerHTML += `
         <div class="tenis">
+            ${foto}
             <h4 style="margin-bottom:6px;">${t.nombre}</h4>
             <p style="color:#94a3b8; margin:4px 0;">Talla: ${t.tallaUnica} | Precio: ${t.precio} Bs</p>
             <p style="margin:4px 0;">${estado}</p>
@@ -235,7 +242,7 @@ function mostrarMensaje(tipo, texto) {
     m.className = 'mensaje msg-' + tipo;
     m.textContent = texto;
     m.style.display = 'block';
-    setTimeout(() => m.style.display = 'none', 6000);
+    setTimeout(() => m.style.display = 'none', 8000);
 }
 
 function salir() {
