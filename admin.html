@@ -72,19 +72,6 @@
 let productos = [...DATOS_INICIALES];
 let indiceEdicion = null;
 let fotoBase64 = null;
-let shaActual = null;
-
-async function cargarSHA() {
-    try {
-        const resp = await fetch('https://api.github.com/repos/mamanicahuanajesus78/tienda-tenis/contents/datos.js?ref=main');
-        if (resp.ok) {
-            const data = await resp.json();
-            shaActual = data.sha;
-        }
-    } catch (e) {
-        console.log('No se pudo obtener SHA');
-    }
-}
 
 function entrar() {
     const u = document.getElementById('usuario').value.trim();
@@ -92,7 +79,6 @@ function entrar() {
     if (USUARIOS[u] && USUARIOS[u] === c) {
         document.getElementById('login').style.display = 'none';
         document.getElementById('panel').style.display = 'block';
-        cargarSHA();
         mostrarLista();
     } else {
         document.getElementById('error-login').style.display = 'block';
@@ -122,24 +108,54 @@ const DATOS_INICIALES = ${JSON.stringify(productos, null, 4)};`;
     mostrarMensaje('cargando', '⏳ Publicando cambios...');
 
     try {
-        const resp = await fetch('/.netlify/functions/actualizar-datos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contenido, sha: shaActual })
-        });
+        const GITHUB_TOKEN = import.meta.env?.VITE_GITHUB_TOKEN || process.env?.GITHUB_TOKEN;
+        const REPO = "mamanicahuanajesus78/tienda-tenis";
+        const RUTA = "datos.js";
 
-        const res = await resp.json();
-        
-        if (res.ok) {
-            shaActual = res.resultado.commit.sha;
-            mostrarMensaje('exito', '✅ ¡Publicado! Tienda actualizada');
-            setTimeout(() => ocultarMensaje(), 3000);
-            return true;
-        } else {
-            throw new Error('Error en la respuesta');
+        if (!GITHUB_TOKEN) {
+            throw new Error('Falta configurar el token en Vercel');
         }
+
+        const respArch = await fetch(
+            `https://api.github.com/repos/${REPO}/contents/${RUTA}`,
+            {
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "User-Agent": "Tienda-Tenis"
+                }
+            }
+        );
+
+        if (!respArch.ok) throw new Error('No se pudo leer de GitHub');
+        const datosArch = await respArch.json();
+
+        const respSubir = await fetch(
+            `https://api.github.com/repos/${REPO}/contents/${RUTA}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "User-Agent": "Tienda-Tenis",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: mensaje,
+                    content: btoa(unescape(encodeURIComponent(contenido))),
+                    sha: datosArch.sha,
+                    branch: "main"
+                })
+            }
+        );
+
+        const resul = await respSubir.json();
+        if (!respSubir.ok) throw new Error(resul.message || 'Error al subir');
+
+        mostrarMensaje('exito', '✅ ¡Publicado! Se verá en 1 minuto');
+        setTimeout(() => ocultarMensaje(), 3000);
+        return true;
+
     } catch (err) {
-        mostrarMensaje('error', '❌ No se pudo publicar: ' + err.message);
+        mostrarMensaje('error', '❌ ' + err.message);
         return false;
     }
 }
@@ -172,8 +188,8 @@ async function guardar() {
 
 async function cambiarEstado(i) {
     productos[i].disponible = !productos[i].disponible;
-    mostrarLista(); // Actualiza rápido en pantalla
-    await publicarCambios(); // ✅ AHORA SÍ GUARDA Y PUBLICA
+    mostrarLista();
+    await publicarCambios();
 }
 
 function mostrarMensaje(tipo, texto) {
@@ -212,7 +228,7 @@ async function borrar(i) {
     if (!confirm('¿Seguro de borrar?')) return;
     productos.splice(i, 1);
     mostrarLista();
-    await publicarCambios(); // ✅ También guarda al borrar
+    await publicarCambios();
 }
 
 function limpiarFormulario() {
