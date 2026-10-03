@@ -13,9 +13,24 @@
         input {width:100%; padding:14px; margin:8px 0; border-radius:10px; border:2px solid #22d3ee50; background:#0f172a; color:white; font-size:16px;}
         button {width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer; margin-top:8px;}
         .btn-entrar {background:linear-gradient(90deg,#22d3ee,#10b981); color:#000;}
+        .btn-guardar {background:linear-gradient(90deg,#10b981,#22c55e); color:#000;}
+        .btn-borrar {background:#ef4444; color:white;}
+        .btn-editar {background:#f59e0b; color:#000;}
         .panel {display:none; max-width:800px; margin:0 auto;}
+        .aviso {background:#1e3a2f; border:1px solid #10b981; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; color:#10b981;}
+        .form {background:#1e293b; padding:25px; border-radius:16px; margin-bottom:25px;}
+        .item {background:#1e293b; padding:18px; border-radius:12px; margin-bottom:12px;}
+        .acciones {display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+        .acciones button {flex:1; min-width:100px; padding:10px; font-size:14px;}
+        .preview {max-width:120px; border-radius:8px; margin:10px 0; display:none;}
+        .mensaje {text-align:center; margin:15px 0; padding:12px; border-radius:8px; display:none; font-weight:bold;}
+        .exito {background:#1e3a2f; color:#10b981;}
+        .error {background:#3b1f1f; color:#f87171;}
+        .cargando {background:#2a2f3f; color:#fbbf24;}
         .volver {display:block; text-align:center; color:#22d3ee; margin-top:20px; text-decoration:none;}
-        .error {color:#ef4444; text-align:center; margin-top:10px; display:none;}
+        .cerrar {background:#334155; color:white; margin-top:30px;}
+        .cancelar {background:#475569; color:white; margin-top:10px; display:none;}
+        .error-login {color:#ef4444; text-align:center; margin-top:10px; display:none;}
     </style>
 </head>
 <body>
@@ -25,40 +40,238 @@
     <input type="text" id="usuario" placeholder="Tu usuario">
     <input type="password" id="clave" placeholder="Tu contraseña">
     <button class="btn-entrar" id="botonEntrar">ENTRAR</button>
-    <p id="error-login" class="error">Usuario o contraseña incorrectos</p>
+    <p id="error-login" class="error-login">Usuario o contraseña incorrectos</p>
     <a href="index.html" class="volver">← Volver a la tienda</a>
 </div>
 
 <div id="panel" class="panel">
-    <h2>✅ ¡BIENVENIDO!</h2>
-    <p>Si ves esto, ya entraste correctamente 🎉</p>
-    <a href="index.html" class="volver">← Ir a la tienda</a>
+    <h2>⚙️ PANEL DE ADMINISTRACIÓN</h2>
+    <div class="aviso">✅ Todo se publica SOLO — no tocas nada más</div>
+    
+    <div id="mensaje" class="mensaje"></div>
+
+    <div class="form">
+        <h3 id="titulo-form">➕ AGREGAR NUEVO TENIS</h3>
+        <input type="text" id="f-nombre" placeholder="Nombre del tenis">
+        <input type="number" id="f-precio" placeholder="Precio en Bolivianos">
+        <input type="number" id="f-talla" placeholder="Talla">
+        <input type="file" id="f-foto" accept="image/*" onchange="verFoto(event)">
+        <img id="foto-vista" class="preview">
+        <button class="btn-guardar" id="btn-guardar" onclick="guardar()">💾 GUARDAR Y PUBLICAR</button>
+        <button class="cancelar" id="btn-cancelar" onclick="cancelar()">❌ CANCELAR</button>
+    </div>
+
+    <h3 style="color:#22d3ee;">📋 LISTA DE TENIS</h3>
+    <div id="lista"></div>
+
+    <button class="cerrar" onclick="cerrarSesion()">Cerrar sesión</button>
+    <a href="index.html" class="volver">← Volver a la tienda</a>
 </div>
 
 <script src="datos.js"></script>
 <script>
-// Conectamos el botón
+let productos = [...DATOS_INICIALES];
+let indiceEdicion = null;
+let fotoBase64 = null;
+
 document.getElementById('botonEntrar').addEventListener('click', entrar);
 
 function entrar() {
     const u = document.getElementById('usuario').value.trim();
     const c = document.getElementById('clave').value.trim();
     
-    console.log('Usuario escrito:', u);
-    console.log('Contraseña escrita:', c);
-    console.log('Usuarios permitidos:', USUARIOS);
-    
     if (USUARIOS[u] && USUARIOS[u] === c) {
         document.getElementById('login').style.display = 'none';
         document.getElementById('panel').style.display = 'block';
-        console.log('✅ Entró correctamente');
+        mostrarLista();
     } else {
         document.getElementById('error-login').style.display = 'block';
         setTimeout(() => {
             document.getElementById('error-login').style.display = 'none';
         }, 3000);
-        console.log('❌ No entró');
     }
+}
+
+function verFoto(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+        fotoBase64 = ev.target.result;
+        document.getElementById('foto-vista').src = fotoBase64;
+        document.getElementById('foto-vista').style.display = 'block';
+    };
+    r.readAsDataURL(f);
+}
+
+async function publicarCambios(mensaje = 'Actualización automática') {
+    const contenido = `// Última actualización: ${new Date().toLocaleString()}
+const TU_WHATSAPP = "${TU_WHATSAPP}";
+const USUARIOS = ${JSON.stringify(USUARIOS, null, 4)};
+const DATOS_PAGO = ${JSON.stringify(DATOS_PAGO, null, 4)};
+const DATOS_INICIALES = ${JSON.stringify(productos, null, 4)};`;
+
+    mostrarMensaje('cargando', '⏳ Publicando cambios...');
+
+    try {
+        const GITHUB_TOKEN = window.GITHUB_TOKEN || import.meta.env?.VITE_GITHUB_TOKEN;
+        const REPO = "mamanicahuanajesus78/tienda-tenis";
+        const RUTA = "datos.js";
+
+        if (!GITHUB_TOKEN) {
+            throw new Error('Falta configurar GITHUB_TOKEN en Vercel');
+        }
+
+        const respArch = await fetch(
+            `https://api.github.com/repos/${REPO}/contents/${RUTA}`,
+            {
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "User-Agent": "Tienda-Tenis"
+                }
+            }
+        );
+
+        if (!respArch.ok) throw new Error('No se pudo leer de GitHub');
+        const datosArch = await respArch.json();
+
+        const respSubir = await fetch(
+            `https://api.github.com/repos/${REPO}/contents/${RUTA}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "User-Agent": "Tienda-Tenis",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: mensaje,
+                    content: btoa(unescape(encodeURIComponent(contenido))),
+                    sha: datosArch.sha,
+                    branch: "main"
+                })
+            }
+        );
+
+        if (!respSubir.ok) throw new Error('Error al subir a GitHub');
+
+        mostrarMensaje('exito', '✅ ¡Publicado! Se verá en 1 minuto');
+        setTimeout(() => ocultarMensaje(), 3000);
+        return true;
+
+    } catch (err) {
+        mostrarMensaje('error', '❌ ' + err.message);
+        return false;
+    }
+}
+
+async function guardar() {
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const precio = parseInt(document.getElementById('f-precio').value);
+    const talla = parseInt(document.getElementById('f-talla').value);
+    
+    if (!nombre || !precio || !talla) { alert('Llena todos los datos'); return; }
+    
+    const imagen = fotoBase64 || (indiceEdicion !== null ? productos[indiceEdicion].imagen : null);
+    if (!imagen) { alert('Elige una foto'); return; }
+
+    if (indiceEdicion !== null) {
+        productos[indiceEdicion] = { ...productos[indiceEdicion], nombre, precio, tallaUnica: talla, imagen };
+        indiceEdicion = null;
+        document.getElementById('titulo-form').textContent = '➕ AGREGAR NUEVO TENIS';
+        document.getElementById('btn-cancelar').style.display = 'none';
+    } else {
+        productos.push({ id: Date.now(), nombre, precio, tallaUnica: talla, imagen, disponible: true });
+    }
+
+    const ok = await publicarCambios();
+    if (ok) {
+        limpiarFormulario();
+        mostrarLista();
+    }
+}
+
+async function cambiarEstado(i) {
+    productos[i].disponible = !productos[i].disponible;
+    mostrarLista();
+    await publicarCambios();
+}
+
+function mostrarMensaje(tipo, texto) {
+    const m = document.getElementById('mensaje');
+    m.className = `mensaje ${tipo}`;
+    m.textContent = texto;
+    m.style.display = 'block';
+}
+
+function ocultarMensaje() {
+    document.getElementById('mensaje').style.display = 'none';
+}
+
+function editar(i) {
+    indiceEdicion = i;
+    const p = productos[i];
+    document.getElementById('f-nombre').value = p.nombre;
+    document.getElementById('f-precio').value = p.precio;
+    document.getElementById('f-talla').value = p.tallaUnica;
+    fotoBase64 = p.imagen;
+    document.getElementById('foto-vista').src = p.imagen;
+    document.getElementById('foto-vista').style.display = 'block';
+    document.getElementById('titulo-form').textContent = '✏️ EDITAR TENIS';
+    document.getElementById('btn-cancelar').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function cancelar() {
+    indiceEdicion = null;
+    limpiarFormulario();
+    document.getElementById('titulo-form').textContent = '➕ AGREGAR NUEVO TENIS';
+    document.getElementById('btn-cancelar').style.display = 'none';
+}
+
+async function borrar(i) {
+    if (!confirm('¿Seguro de borrar?')) return;
+    productos.splice(i, 1);
+    mostrarLista();
+    await publicarCambios();
+}
+
+function limpiarFormulario() {
+    document.getElementById('f-nombre').value = '';
+    document.getElementById('f-precio').value = '';
+    document.getElementById('f-talla').value = '';
+    document.getElementById('f-foto').value = '';
+    fotoBase64 = null;
+    document.getElementById('foto-vista').style.display = 'none';
+}
+
+function mostrarLista() {
+    const lista = document.getElementById('lista');
+    lista.innerHTML = '';
+    productos.forEach((p, i) => {
+        lista.innerHTML += `
+        <div class="item">
+            <h4 style="margin:0 0 6px 0; font-size:17px;">${p.nombre}</h4>
+            <p style="color:#94a3b8; margin:4px 0;">Talla: ${p.tallaUnica} | Precio: ${p.precio} Bs</p>
+            <p style="color:${p.disponible?'#10b981':'#ef4444'}; font-weight:bold;">
+                ${p.disponible?'✅ DISPONIBLE':'❌ VENDIDO'}
+            </p>
+            <div class="acciones">
+                <button style="background:${p.disponible?'#ef4444':'#10b981'}" onclick="cambiarEstado(${i})">
+                    ${p.disponible?'Marcar VENDIDO':'Marcar DISPONIBLE'}
+                </button>
+                <button class="btn-editar" onclick="editar(${i})">✏️ EDITAR</button>
+                <button class="btn-borrar" onclick="borrar(${i})">🗑️ BORRAR</button>
+            </div>
+        </div>`;
+    });
+}
+
+function cerrarSesion() {
+    document.getElementById('panel').style.display = 'none';
+    document.getElementById('login').style.display = 'block';
+    document.getElementById('usuario').value = '';
+    document.getElementById('clave').value = '';
 }
 </script>
 </body>
