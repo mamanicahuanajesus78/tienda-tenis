@@ -5,195 +5,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>👟 Tienda de Tenis — Modelos Únicos</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; padding: 30px 20px; }
-        h1 { font-size: 2rem; background: linear-gradient(90deg, #00f0ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitulo { color: #94a3b8; margin-top: 10px; }
+        * {margin:0; padding:0; box-sizing:border-box; font-family:system-ui;}
+        body {background:#0f172a; color:white; padding:20px; min-height:100vh;}
+        .contenedor {max-width:1200px; margin:0 auto; position:relative;}
 
-        /* Filtros */
-        .filtros { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0; }
-        .btn-filtro { padding: 10px 20px; border: none; border-radius: 25px; background: #334155; color: #fff; cursor: pointer; transition: all 0.3s; }
-        .btn-filtro.activo { background: linear-gradient(90deg, #00f0ff, #00ff88); color: #000; font-weight: bold; }
+        /* 👤 Ícono administrador */
+        .icono-admin {
+            position:absolute;
+            top:5px;
+            right:5px;
+            font-size:1.7rem;
+            background:#1e293b;
+            padding:8px 11px;
+            border-radius:50%;
+            cursor:pointer;
+            border:2px solid #22d3ee;
+            transition:all 0.2s;
+            z-index:10;
+            text-decoration:none;
+        }
+        .icono-admin:hover {
+            background:#22d3ee;
+            color:#000;
+        }
 
-        /* QR */
-        .seccion-pago { background: #1e293b; border-radius: 16px; padding: 25px; margin: 30px 0; text-align: center; }
-        .qr-contenedor { position: relative; display: inline-block; }
-        .qr-img { max-width: 280px; width: 85%; border-radius: 12px; margin: 15px auto; display: block; border: 3px solid rgba(0,240,255,0.3); box-shadow: 0 0 20px rgba(0,240,255,0.2); cursor: zoom-in; transition: transform 0.3s; }
-        .qr-img:hover { transform: scale(1.02); }
-        .lupa-qr { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .qr-grande { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; }
-        .qr-grande.activo { display: flex; }
-        .qr-grande img { max-width: 90%; max-height: 90%; border-radius: 12px; }
-        .cerrar-qr { position: absolute; top: 20px; right: 30px; font-size: 30px; color: #fff; cursor: pointer; }
+        header {text-align:center; padding:30px 45px 10px;}
+        h1 {font-size:2rem; background:linear-gradient(90deg,#22d3ee,#10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+        .subtitulo {color:#94a3b8; margin-top:10px; margin-bottom:20px;}
 
-        /* Grid Tenis */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin: 30px 0; }
-        .tarjeta { background: #1e293b; border-radius: 16px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; border: 2px solid transparent; }
-        .tarjeta:target { border-color: #00f0ff; box-shadow: 0 0 30px rgba(0,240,255,0.4); animation: resaltar 1.5s ease; }
-        @keyframes resaltar { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-        .tarjeta:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,240,255,0.15); }
-        .tarjeta.vendido { opacity: 0.6; }
-        .etiqueta-vendido { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); background: #ef4444; color: #fff; padding: 5px 15px; border-radius: 20px; font-weight: bold; z-index: 2; }
-        .img-tenis { width: 100%; height: 220px; object-fit: cover; }
-        .contenido { padding: 15px; }
-        .numero { font-size: 0.85rem; color: #00f0ff; font-weight: bold; margin-bottom: 5px; }
-        .nombre { font-size: 1.1rem; margin-bottom: 8px; }
-        .talla { color: #94a3b8; font-size: 0.9rem; margin-bottom: 10px; }
-        .precio { font-size: 1.3rem; font-weight: bold; color: #00ff88; margin-bottom: 15px; }
-        .btn-wsp { width: 100%; padding: 12px; background: linear-gradient(90deg, #25d366, #128c7e); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
-        .btn-wsp:hover { transform: scale(1.03); }
-        .admin-link { position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: #94a3b8; padding: 8px 12px; border-radius: 20px; text-decoration: none; font-size: 0.8rem; z-index: 100; }
-        .admin-link:hover { color: #00f0ff; }
-        .sin-resultados { text-align: center; padding: 50px; color: #94a3b8; }
+        /* 💳 Sección de pago */
+        .pago {
+            background:#1e293b;
+            padding:20px;
+            border-radius:16px;
+            text-align:center;
+            margin-bottom:25px;
+        }
+        .pago h3 {color:#22d3ee; margin-bottom:12px; font-size:1.1rem;}
+        .pago p {margin:6px 0; font-size:0.95rem;}
+        .qr-img {
+            max-width:240px;
+            width:75%;
+            border-radius:12px;
+            margin:12px auto;
+            display:block;
+            border:3px solid rgba(34,211,238,0.3);
+            cursor:zoom-in;
+        }
+        .clic-qr {font-size:0.8rem; color:#94a3b8; margin-top:-5px;}
+
+        /* FILTROS DINÁMICOS */
+        .filtros {display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;}
+        .filtro {padding:10px 20px; border-radius:30px; border:none; background:#1e293b; color:white; cursor:pointer; transition:all 0.3s;}
+        .filtro.activo {background:linear-gradient(90deg,#22d3ee,#10b981); color:#000; font-weight:bold;}
+
+        /* Tarjetas de tenis */
+        .grid {display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:25px;}
+        .tarjeta {background:#1e293b; border-radius:16px; overflow:hidden; border:2px solid transparent; transition:all 0.3s;}
+        .tarjeta:hover {border-color:#22d3ee; transform:translateY(-5px);}
+        .tarjeta.vendida {opacity:0.6; border-color:#ef4444;}
+        .foto {width:100%; height:250px; object-fit:cover; background:#334155;}
+        .info {padding:20px;}
+        .nombre {font-size:1.2rem; font-weight:bold; margin-bottom:10px;}
+        .talla {color:#94a3b8; margin-bottom:8px;}
+        .precio {font-size:1.4rem; color:#10b981; font-weight:bold; margin-bottom:15px;}
+        .vendido-texto {color:#ef4444; font-weight:bold; text-align:center; padding:10px;}
+        .boton {width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; font-size:1rem; cursor:pointer; transition:all 0.3s;}
+        .btn-comprar {background:linear-gradient(90deg,#22d3ee,#10b981); color:#000;}
+        .btn-comprar:disabled {background:#475569; color:#94a3b8; cursor:not-allowed;}
+        .cargando {text-align:center; padding:50px; color:#94a3b8;}
+
+        /* QR grande */
+        .modal-qr {display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:999; align-items:center; justify-content:center;}
+        .modal-qr.activo {display:flex;}
+        .modal-qr img {max-width:90%; max-height:80vh; border-radius:12px;}
+        .cerrar-qr {position:absolute; top:20px; right:30px; color:white; font-size:2rem; cursor:pointer;}
     </style>
 </head>
 <body>
 
-<a href="admin.html" class="admin-link" title="Panel de Administración">👤</a>
+<div class="contenedor">
+    <!-- 👤 Ícono administrador -->
+    <a href="admin.html" class="icono-admin" title="Administrar">👤</a>
 
-<div class="container">
     <header>
-        <h1>👟 Tienda de Tenis</h1>
-        <p class="subtitulo">Modelos únicos — Entregas: Sábados — Ceibo / Uyuni</p>
+        <h1>👟 TIENDA DE TENIS</h1>
+        <p class="subtitulo">Modelos únicos — Entregas los sábados</p>
     </header>
 
-    <!-- Sección de Pago -->
-    <div class="seccion-pago">
-        <h2>💳 Formas de Pago</h2>
+    <!-- 💳 Formas de pago -->
+    <div class="pago">
+        <h3>💳 FORMAS DE PAGO</h3>
         <p><strong>Nombre:</strong> Jesus Mamani Cahuana</p>
         <p><strong>Yape:</strong> 63228616</p>
-        <div class="qr-contenedor">
-            <img src="tu-qr.jpg" alt="QR de Pago" class="qr-img" id="qrImagen">
-            <button class="lupa-qr" onclick="abrirQRGrande()">🔍</button>
-        </div>
-        <p style="color:#94a3b8; font-size:0.9rem;">Escanea o guarda el QR para pagar</p>
+        <img src="tu-qr.jpg" alt="QR de pago" class="qr-img" onclick="abrirQr()">
+        <p class="clic-qr">👆 Toca para agrandar el QR</p>
+        <p style="margin-top:8px;">📦 Entrega: Sábados — Ceibo Paquetería</p>
     </div>
 
-    <!-- QR Grande -->
-    <div class="qr-grande" id="qrGrande" onclick="cerrarQRGrande()">
-        <span class="cerrar-qr">&times;</span>
-        <img src="tu-qr.jpg" alt="QR Agrandado">
-    </div>
+    <!-- Filtros dinámicos -->
+    <div class="filtros" id="cajaFiltros"></div>
 
-    <!-- Filtros -->
-    <div class="filtros">
-        <button class="btn-filtro activo" data-talla="todos">Todos</button>
-        <button class="btn-filtro" data-talla="20">Talla 20</button>
-        <button class="btn-filtro" data-talla="38">Talla 38</button>
-        <button class="btn-filtro" data-talla="39">Talla 39</button>
-        <button class="btn-filtro" data-talla="40">Talla 40</button>
-        <button class="btn-filtro" data-talla="41">Talla 41</button>
-    </div>
-
-    <!-- Lista de Tenis -->
-    <div class="grid" id="gridTenis"></div>
-    <div class="sin-resultados" id="sinResultados" style="display:none;">No hay tenis disponibles en esta talla</div>
+    <!-- Lista de tenis -->
+    <div id="gridTenis" class="grid"></div>
 </div>
 
+<!-- QR grande modal -->
+<div class="modal-qr" id="modalQr" onclick="if(event.target===this) cerrarQr()">
+    <span class="cerrar-qr" onclick="cerrarQr()">&times;</span>
+    <img src="tu-qr.jpg" alt="QR Agrandado">
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script>
-// ==============================================
-// ✅ TUS DATOS — EDITA AQUÍ SI CAMBIAS ALGO
-// ==============================================
-const TU_WHATSAPP = "59161159473"; // Tu número con código de país
-const listaTenis = [
-  // EJEMPLO — Aquí se cargarán los tenis desde el panel
-  // El panel los agrega automáticamente aquí
-];
+const firebaseConfig = {
+    apiKey: "AIzaSyDg4IAfAWB_WVnHBFTkmCJC5mMTsUosprw",
+    authDomain: "tienda-tenis-ba844.firebaseapp.com",
+    projectId: "tienda-tenis-ba844",
+    storageBucket: "tienda-tenis-ba844.firebasestorage.app",
+    messagingSenderId: "802544997333",
+    appId: "1:802544997333:web:2136a4064e9a0afc6da35c"
+};
 
-// ==============================================
-// ✅ NO MODIFICAR DESDE AQUÍ
-// ==============================================
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const TU_WHATSAPP = "59161159473";
 let filtroActivo = "todos";
+let listaTenis = [];
 
-// Cargar datos guardados desde el panel
-function cargarDatos() {
-  const guardado = localStorage.getItem('tenisTienda');
-  if (guardado) {
-    listaTenis.length = 0;
-    listaTenis.push(...JSON.parse(guardado));
-  }
-}
-
-// Renderizar tenis
-function mostrarTenis() {
-  const grid = document.getElementById('gridTenis');
-  const sinResultados = document.getElementById('sinResultados');
-  grid.innerHTML = '';
-
-  const filtrados = filtroActivo === "todos" 
-    ? listaTenis 
-    : listaTenis.filter(t => t.talla === filtroActivo);
-
-  if (filtrados.length === 0) {
-    sinResultados.style.display = 'block';
-    return;
-  }
-  sinResultados.style.display = 'none';
-
-  filtrados.forEach((tenis, indice) => {
-    const numeroReal = listaTenis.findIndex(t => t.id === tenis.id) + 1;
-    const tarjeta = document.createElement('div');
-    tarjeta.className = `tarjeta ${tenis.vendido ? 'vendido' : ''}`;
-    tarjeta.id = `tenis-${tenis.id}`;
-
-    tarjeta.innerHTML = `
-      ${tenis.vendido ? '<span class="etiqueta-vendido">VENDIDO</span>' : ''}
-      <img src="${tenis.imagen}" alt="${tenis.nombre}" class="img-tenis" loading="lazy">
-      <div class="contenido">
-        <span class="numero">Nº ${numeroReal}</span>
-        <h3 class="nombre">${tenis.nombre}</h3>
-        <p class="talla">👞 Talla: ${tenis.talla}</p>
-        <p class="precio">💰 ${tenis.precio} Bs</p>
-        ${!tenis.vendido 
-          ? `<button class="btn-wsp" onclick="comprar('${tenis.id}', '${tenis.nombre.replace(/'/g, "\\'")}', '${tenis.talla}', '${tenis.precio}')">💬 Preguntar por WhatsApp</button>` 
-          : '<p style="color:#ef4444; text-align:center; font-weight:bold;">Reservado</p>'}
-      </div>
-    `;
-    grid.appendChild(tarjeta);
-  });
-}
-
-// Función de compra con NÚMERO y ENLACE DIRECTO
-function comprar(id, nombre, talla, precio) {
-  const numero = listaTenis.findIndex(t => t.id === id) + 1;
-  const enlaceDirecto = window.location.origin + window.location.pathname + '#tenis-' + id;
-
-  const mensaje = encodeURIComponent(
-    `Hola! 👟 Me interesa este modelo:\n\n` +
-    `🔢 Nº ${numero}\n` +
-    `📦 ${nombre}\n` +
-    `👞 Talla: ${talla}\n` +
-    `💰 Precio: ${precio} Bs\n\n` +
-    `🔗 Ver tenis: ${enlaceDirecto}\n\n` +
-    `Quedo atento para el pago y entrega. Gracias!`
-  );
-
-  window.open(`https://wa.me/${TU_WHATSAPP}?text=${mensaje}`, '_blank');
-}
-
-// Filtros
-document.querySelectorAll('.btn-filtro').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('activo'));
-    btn.classList.add('activo');
-    filtroActivo = btn.dataset.talla;
+// Cargar tenis en tiempo real
+db.collection("tenis").onSnapshot(snapshot => {
+    listaTenis = [];
+    snapshot.forEach(doc => listaTenis.push({id:doc.id, ...doc.data()}));
+    actualizarFiltros();
     mostrarTenis();
-  });
 });
 
-// QR Agrandado
-function abrirQRGrande() {
-  document.getElementById('qrGrande').classList.add('activo');
-}
-function cerrarQRGrande() {
-  document.getElementById('qrGrande').classList.remove('activo');
+// ✅ Filtros dinámicos: solo tallas que existen disponibles
+function actualizarFiltros() {
+    const caja = document.getElementById("cajaFiltros");
+    
+    const tallasDisponibles = [...new Set(
+        listaTenis
+            .filter(t => t.disponible !== false)
+            .map(t => t.talla)
+    )].sort((a, b) => Number(a) - Number(b));
+
+    caja.innerHTML = `<button class="filtro ${filtroActivo==='todos'?'activo':''}" data-talla="todos">Todos</button>`;
+    
+    tallasDisponibles.forEach(talla => {
+        caja.innerHTML += `<button class="filtro ${filtroActivo===talla?'activo':''}" data-talla="${talla}">Talla ${talla}</button>`;
+    });
+
+    // Asignar eventos a los botones nuevos
+    document.querySelectorAll(".filtro").forEach(boton => {
+        boton.addEventListener("click", () => {
+            document.querySelectorAll(".filtro").forEach(b => b.classList.remove("activo"));
+            boton.classList.add("activo");
+            filtroActivo = boton.dataset.talla;
+            mostrarTenis();
+        });
+    });
 }
 
-// Iniciar
-cargarDatos();
-mostrarTenis();
+function mostrarTenis() {
+    const caja = document.getElementById("gridTenis");
+    caja.innerHTML = "";
+    
+    const filtrados = filtroActivo === "todos" 
+        ? listaTenis 
+        : listaTenis.filter(t => String(t.talla) === String(filtroActivo));
+    
+    if (filtrados.length === 0) {
+        caja.innerHTML = '<p class="cargando">No hay tenis de esta talla disponible 😊</p>';
+        return;
+    }
+    
+    filtrados.forEach(t => {
+        caja.innerHTML += `
+        <div class="tarjeta ${t.disponible ? '' : 'vendida'}">
+            <img src="${t.imagen}" alt="${t.nombre}" class="foto">
+            <div class="info">
+                <h3 class="nombre">${t.nombre}</h3>
+                <p class="talla">👞 Talla: ${t.talla}</p>
+                <p class="precio">${t.precio} Bs</p>
+                ${t.disponible 
+                    ? `<button class="boton btn-comprar" onclick="comprar('${t.id}','${t.nombre}','${t.talla}','${t.precio}')">💬 Preguntar por WhatsApp</button>` 
+                    : `<p class="vendido-texto">❌ VENDIDO</p>`
+                }
+            </div>
+        </div>`;
+    });
+}
+
+function comprar(id, nombre, talla, precio) {
+    const enlace = window.location.origin + window.location.pathname + '#tenis-' + id;
+    const msg = encodeURIComponent(
+        `Hola! 👟 Me interesa este modelo:\n\n📦 ${nombre}\n👞 Talla: ${talla}\n💰 Precio: ${precio} Bs\n\n🔗 Ver: ${enlace}\nQuedo atento para el pago y entrega. Gracias!`
+    );
+    window.open(`https://wa.me/${TU_WHATSAPP}?text=${msg}`);
+}
+
+function abrirQr() {
+    document.getElementById('modalQr').classList.add('activo');
+}
+function cerrarQr() {
+    document.getElementById('modalQr').classList.remove('activo');
+}
 </script>
+
 </body>
 </html>
