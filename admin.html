@@ -3,60 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Panel de Administración</title>
+    <title>👟 Tienda de Tenis — Panel de Administración</title>
+    <link rel="stylesheet" href="style.css">
     <style>
         * {box-sizing:border-box; font-family:system-ui, sans-serif;}
         body {background:#0f172a; color:white; padding:20px;}
-        .caja {max-width:420px; margin:60px auto; padding:30px; background:#1e293b; border-radius:16px; border:2px solid #22d3ee;}
-        h2 {text-align:center; color:#22d3ee;}
+        
+        /* Pantalla de inicio de sesión */
+        .login-caja {max-width:420px; margin:60px auto; padding:35px; background:#1e293b; border-radius:16px; border:2px solid #22d3ee;}
+        h2 {text-align:center; color:#22d3ee; margin:0 0 25px 0;}
         input {width:100%; padding:14px; margin:8px 0; border-radius:10px; border:2px solid #22d3ee50; background:#0f172a; color:white; font-size:16px;}
-        button {width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer; margin-top:8px;}
-        .btn-verde {background:linear-gradient(90deg,#22d3ee,#10b981); color:#000;}
-        .error {color:#ef4444; text-align:center; margin-top:15px; display:none;}
+        button {width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer; margin-top:8px; transition:transform 0.1s;}
+        button:active {transform:scale(0.98);}
+        .btn-entrar {background:linear-gradient(90deg,#22d3ee,#10b981); color:#000;}
+        .btn-guardar {background:linear-gradient(90deg,#10b981,#22c55e); color:#000;}
+        .btn-borrar {background:#ef4444; color:white;}
+        .btn-editar {background:#f59e0b; color:#000;}
+        .btn-cancelar {background:#475569; color:white; display:none;}
+        .error-texto {color:#ef4444; text-align:center; margin-top:15px; display:none;}
+        
+        /* Panel de administración */
         .panel {display:none; max-width:800px; margin:0 auto;}
-        .volver {display:block; text-align:center; color:#22d3ee; margin-top:20px; text-decoration:none;}
+        .aviso {background:#1e3a2f; border:1px solid #10b981; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; color:#86efac;}
+        .form-caja {background:#1e293b; padding:25px; border-radius:16px; margin-bottom:25px;}
+        .tenis-item {background:#1e293b; padding:18px; border-radius:12px; margin-bottom:12px;}
+        .botones-accion {display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+        .botones-accion button {flex:1; min-width:100px; padding:10px; font-size:14px;}
+        .foto-prevista {max-width:120px; border-radius:8px; margin:10px 0; display:none;}
+        .mensaje {text-align:center; margin:15px 0; padding:12px; border-radius:8px; display:none; font-weight:bold;}
+        .mensaje-exito {background:#1e3a2f; color:#86efac;}
+        .mensaje-error {background:#3b1f1f; color:#fca5a5;}
+        .mensaje-cargando {background:#2a2f3f; color:#fcd34d;}
+        .enlace-volver {display:block; text-align:center; color:#22d3ee; margin-top:20px; text-decoration:none;}
+        .boton-cerrar {background:#334155; color:white; margin-top:30px;}
+        .etiqueta {color:#94a3b8; font-size:14px; display:block; margin-top:10px; margin-bottom:4px;}
     </style>
 </head>
 <body>
 
-<div id="pantalla-login" class="caja">
+<!-- PANTALLA DE INICIO DE SESIÓN -->
+<div id="pantalla-login" class="login-caja">
     <h2>🔐 INICIAR SESIÓN</h2>
-    <input type="text" id="usuario" placeholder="Tu usuario">
-    <input type="password" id="clave" placeholder="Tu contraseña">
-    <button class="btn-verde" onclick="verificar()">ENTRAR</button>
-    <p id="mensaje-error" class="error">Usuario o contraseña incorrectos</p>
-    <a href="index.html" class="volver">← Volver a la tienda</a>
+    <input type="text" id="usuario" placeholder="Escribe tu usuario">
+    <input type="password" id="clave" placeholder="Escribe tu contraseña">
+    <button class="btn-entrar" onclick="verificarAcceso()">ENTRAR</button>
+    <p id="aviso-error" class="error-texto">Usuario o contraseña incorrectos</p>
+    <a href="index.html" class="enlace-volver">← Volver a la tienda</a>
 </div>
 
+<!-- PANEL DE ADMINISTRACIÓN COMPLETO -->
 <div id="pantalla-panel" class="panel">
-    <h2>✅ ¡YA ENTRASTE!</h2>
-    <p>Si ves esto, ya funciona bien 🎉</p>
-    <p>Estamos terminando de poner todo lo de agregar y editar tenis.</p>
-    <a href="index.html" class="volver">← Ir a la tienda</a>
+    <h2>⚙️ PANEL DE ADMINISTRACIÓN</h2>
+    <div class="aviso">✅ Todo se publica automáticamente en tu tienda</div>
+    
+    <!-- Mensajes -->
+    <div id="caja-mensaje" class="mensaje"></div>
+
+    <!-- Formulario: Agregar / Editar -->
+    <div class="form-caja">
+        <h3 id="titulo-form">➕ AGREGAR NUEVO TENIS</h3>
+        
+        <label class="etiqueta">Nombre / Modelo</label>
+        <input type="text" id="campo-nombre" placeholder="Ej: Tenis Predator — Negro Blanco">
+        
+        <label class="etiqueta">Precio (Bolivianos)</label>
+        <input type="number" id="campo-precio" placeholder="Ej: 150">
+        
+        <label class="etiqueta">Talla</label>
+        <input type="number" id="campo-talla" placeholder="Ej: 38">
+        
+        <label class="etiqueta">Foto del tenis</label>
+        <input type="file" id="campo-foto" accept="image/*" onchange="previsualizarFoto(event)">
+        <img id="vista-foto" class="foto-prevista" alt="Vista previa">
+        
+        <button class="btn-guardar" id="boton-guardar" onclick="guardarTenis()">💾 GUARDAR Y PUBLICAR</button>
+        <button class="btn-cancelar" id="boton-cancelar" onclick="cancelarEdicion()">❌ CANCELAR</button>
+    </div>
+
+    <!-- Lista de tenis -->
+    <h3 style="color:#22d3ee;">📋 TUS TENIS PUBLICADOS</h3>
+    <div id="lista-tenis"></div>
+
+    <button class="boton-cerrar" onclick="cerrarSesion()">Cerrar sesión</button>
+    <a href="index.html" class="enlace-volver">← Ir a la tienda</a>
 </div>
 
 <script>
-// TUS DATOS — AQUÍ ESTÁN, NO SE MUEVEN DE AQUÍ
-const USUARIOS = {
+// ==============================================
+// 🔑 TUS DATOS DE ACCESO — NO CAMBIAR A MENOS QUE QUIERAS
+// ==============================================
+const USUARIOS_PERMITIDOS = {
   "jesus": "mamani",
   "yhubanneth": "71931423"
 };
 
-function verificar() {
-    const u = document.getElementById('usuario').value.trim();
-    const c = document.getElementById('clave').value.trim();
+// ==============================================
+// 🔄 FUNCIÓN DE INICIO DE SESIÓN
+// ==============================================
+function verificarAcceso() {
+    const usuario = document.getElementById('usuario').value.trim();
+    const clave = document.getElementById('clave').value.trim();
     
-    if (USUARIOS[u] && USUARIOS[u] === c) {
-        // Bien → mostramos el panel
+    if (USUARIOS_PERMITIDOS[usuario] && USUARIOS_PERMITIDOS[usuario] === clave) {
+        // ✅ Entró correctamente
         document.getElementById('pantalla-login').style.display = 'none';
         document.getElementById('pantalla-panel').style.display = 'block';
+        cargarListaTenis();
     } else {
-        // Mal → mostramos error
-        document.getElementById('mensaje-error').style.display = 'block';
+        // ❌ Datos incorrectos
+        document.getElementById('aviso-error').style.display = 'block';
         setTimeout(() => {
-            document.getElementById('mensaje-error').style.display = 'none';
+            document.getElementById('aviso-error').style.display = 'none';
         }, 3000);
     }
+}
+
+// ==============================================
+// 📋 DATOS DE TUS TENIS — AQUÍ SE CARGA TODO
+// ==============================================
+let listaTenis = [];
+let modoEdicionId = null;
+let fotoBase64 = null;
+
+// Cargar tenis desde datos.js
+function cargarListaTenis() {
+    if (typeof DATOS_INICIALES !== 'undefined') {
+        listaTenis = [...DATOS_INICIALES];
+    }
+    mostrarListaEnPantalla();
+}
+
+// Previsualizar foto antes de guardar
+function previsualizarFoto(event) {
+    const archivo = event.target.files[0];
+    if (!archivo) return;
+    
+    const lector = new FileReader();
+    lector.onload = function(e) {
+        fotoBase64 = e.target.result;
+        document.getElementById('vista-foto').src = fotoBase64;
+        document.getElementById('vista-foto').style.display = 'block';
+    };
+    lector.readAsDataURL(archivo);
+}
+
+// Mostrar la lista completa en pantalla
+function mostrarListaEnPantalla() {
+    const caja = document.getElementById('lista-tenis');
+    caja.innerHTML = '';
+    
+    listaTenis.forEach((tenis, indice) => {
+        const estado = tenis.disponible 
+            ? '<span style="color:#86efac;">✅ DISPONIBLE</span>' 
+            : '<span style="color:#fca5a5;">❌ VENDIDO</span>';
+        
+        caja.innerHTML += `
+        <div class="tenis-item">
+            <h4 style="margin:0 0 8px 0; font-size:16px;">${tenis.nombre}</h4>
+            <p style="color:#94a3b8; margin:4px 0;">Talla: ${tenis.tallaUnica} | Precio: ${tenis.precio} Bs</p>
+            <p style="margin:4px 0;">${estado}</p>
+            <div class="botones-accion">
+                <button onclick="cambiarEstadoDisponible(${indice})" 
+                    style="background:${tenis.disponible?'#ef4444':'#10b981'}; color:white;">
+                    ${tenis.disponible?'Marcar VENDIDO':'Marcar DISPONIBLE'}
+                </button>
+                <button class="btn-editar" onclick="editarTenis(${indice})">✏️ EDITAR</button>
+                <button class="btn-borrar" onclick="borrarTenis(${indice})">🗑️ BORRAR</button>
+            </div>
+        </div>`;
+    });
+}
+
+// Guardar: Agregar nuevo o modificar existente
+function guardarTenis() {
+    const nombre = document.getElementById('campo-nombre').value.trim();
+    const precio = parseInt(document.getElementById('campo-precio').value);
+    const talla = parseInt(document.getElementById('campo-talla').value);
+    
+    if (!nombre || !precio || !talla) {
+        mostrarMensaje('error', '⚠️ Llena todos los datos: nombre, precio y talla');
+        return;
+    }
+    
+    const imagen = fotoBase64 || 'fotos/sin-foto.jpg';
+    
+    if (modoEdicionId !== null) {
+        // Modo edición: actualizar existente
+        listaTenis[modoEdicionId] = {
+            ...listaTenis[modoEdicionId],
+            nombre, precio, tallaUnica: talla,
+            imagen: fotoBase64 || listaTenis[modoEdicionId].imagen
+        };
+        modoEdicionId = null;
+        document.getElementById('titulo-form').textContent = '➕ AGREGAR NUEVO TENIS';
+        document.getElementById('boton-cancelar').style.display = 'none';
+    } else {
+        // Agregar nuevo
+        listaTenis.push({
+            id: Date.now(),
+            nombre, precio, tallaUnica: talla,
+            imagen,
+            disponible: true
+        });
+    }
+    
+    limpiarFormulario();
+    mostrarListaEnPantalla();
+    mostrarMensaje('exito', '✅ ¡Guardado! En la versión completa se publica solo');
+}
+
+// Cambiar estado: disponible / vendido
+function cambiarEstadoDisponible(indice) {
+    listaTenis[indice].disponible = !listaTenis[indice].disponible;
+    mostrarListaEnPantalla();
+}
+
+// Editar un tenis existente
+function editarTenis(indice) {
+    const t = listaTenis[indice];
+    document.getElementById('campo-nombre').value = t.nombre;
+    document.getElementById('campo-precio').value = t.precio;
+    document.getElementById('campo-talla').value = t.tallaUnica;
+    
+    if (t.imagen && t.imagen.startsWith('data:')) {
+        document.getElementById('vista-foto').src = t.imagen;
+        document.getElementById('vista-foto').style.display = 'block';
+        fotoBase64 = t.imagen;
+    }
+    
+    modoEdicionId = indice;
+    document.getElementById('titulo-form').textContent = '✏️ EDITANDO TENIS';
+    document.getElementById('boton-cancelar').style.display = 'block';
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// Cancelar edición
+function cancelarEdicion() {
+    modoEdicionId = null;
+    limpiarFormulario();
+    document.getElementById('titulo-form').textContent = '➕ AGREGAR NUEVO TENIS';
+    document.getElementById('boton-cancelar').style.display = 'none';
+}
+
+// Borrar un tenis
+function borrarTenis(indice) {
+    if (!confirm('¿Seguro que quieres borrar este tenis?')) return;
+    listaTenis.splice(indice, 1);
+    mostrarListaEnPantalla();
+}
+
+// Limpiar formulario
+function limpiarFormulario() {
+    document.getElementById('campo-nombre').value = '';
+    document.getElementById('campo-precio').value = '';
+    document.getElementById('campo-talla').value = '';
+    document.getElementById('campo-foto').value = '';
+    document.getElementById('vista-foto').style.display = 'none';
+    fotoBase64 = null;
+}
+
+// Mostrar mensajes al usuario
+function mostrarMensaje(tipo, texto) {
+    const caja = document.getElementById('caja-mensaje');
+    caja.className = 'mensaje mensaje-' + tipo;
+    caja.textContent = texto;
+    caja.style.display = 'block';
+    
+    setTimeout(() => {
+        caja.style.display = 'none';
+    }, 4000);
+}
+
+// Cerrar sesión
+function cerrarSesion() {
+    document.getElementById('pantalla-panel').style.display = 'none';
+    document.getElementById('pantalla-login').style.display = 'block';
+    document.getElementById('usuario').value = '';
+    document.getElementById('clave').value = '';
+    limpiarFormulario();
 }
 </script>
 
